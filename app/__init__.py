@@ -18,4 +18,6 @@ def create_app():
     app.config["SECRET_KEY"] = "hjhjsdahhds"
     socketio.init_app(app)
     login_manager.init_app(app)
+    from app.http.routes import register_routes
+    register_routes(app)
     return app
