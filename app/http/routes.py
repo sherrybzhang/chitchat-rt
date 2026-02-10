@@ -1,6 +1,11 @@
 from flask import render_template, request, session, redirect, url_for, make_response
 
-rooms = {}
+from app.services.room_services import (
+    rooms,
+    room_exists,
+    create_room,
+    get_room_messages,
+)
 
 
 def register_routes(app):
@@ -35,7 +40,7 @@ def register_routes(app):
             if join != False and not code:
                 return render_template("chatroomEntry.html", error="Please enter a room code.", code=code, name=name)
 
-            if create != False and room in rooms:
+            if create != False and room_exists(room):
                 return render_template(
                     "chatroomEntry.html",
                     error="Room already exists. Click 'Join a Channel' to join. ",
@@ -43,9 +48,9 @@ def register_routes(app):
                     name=name,
                 )
 
-            if create != False and code not in rooms:
-                rooms[room] = {"members": 0, "messages": []}
-            elif code not in rooms:
+            if create != False and not room_exists(room):
+                create_room(room)
+            elif not room_exists(code):
                 return render_template("chatroomEntry.html", error="Room does not exist.", code=code, name=name)
             session["room"] = room
             return render_template(
@@ -53,7 +58,7 @@ def register_routes(app):
                 rooms=rooms,
                 code=code,
                 name=name,
-                messages=rooms[room]["messages"],
+                messages=get_room_messages(room),
             )
 
         return render_template("chatroomEntry.html")
@@ -61,17 +66,17 @@ def register_routes(app):
     @app.route("/room")
     def room():
         roomCode = request.cookies.get("roomCode")
-        if roomCode and roomCode in rooms:
+        if roomCode and room_exists(roomCode):
             session["room"] = roomCode
         room = session.get("room")
-        if room is None or session.get("name") is None or room not in rooms:
+        if room is None or session.get("name") is None or not room_exists(room):
             return redirect(url_for("chatroomEntry"))
 
-        return render_template("room.html", code=room, rooms=rooms, messages=rooms[room]["messages"])
+        return render_template("room.html", code=room, rooms=rooms, messages=get_room_messages(room))
 
     @app.route("/room/<roomCode>")
     def view_room(roomCode):
-        if roomCode not in rooms:
+        if not room_exists(roomCode):
             return redirect(url_for("chatroomEntry"))
 
         session["room"] = roomCode
@@ -93,9 +98,9 @@ def register_routes(app):
             room = request.form["room"]
             print(room)
             session["room"] = room
-            if room is None or session.get("name") is None or room not in rooms:
+            if room is None or session.get("name") is None or not room_exists(room):
                 return redirect(url_for("chatroomEntry"))
 
-            return render_template("room.html", code=room, rooms=rooms, messages=rooms[room]["messages"])
+            return render_template("room.html", code=room, rooms=rooms, messages=get_room_messages(room))
 
     return app
