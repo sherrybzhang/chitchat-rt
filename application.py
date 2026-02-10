@@ -1,13 +1,10 @@
-from flask import Flask, render_template, request, session, redirect, url_for, make_response
-from flask_socketio import join_room, leave_room, send, SocketIO
-from flask_login import LoginManager
+from flask import render_template, request, session, redirect, url_for, make_response
+from flask_socketio import join_room, leave_room, send
 from string import ascii_uppercase
 
-app = Flask(__name__)
-app.config["SECRET_KEY"] = "hjhjsdahhds"
-socketio = SocketIO(app)
-login_manager = LoginManager()
-login_manager.init_app(app)
+from app import create_app, login_manager, socketio
+
+app = create_app()
 
 @app.before_request
 def make_session_permanent():
