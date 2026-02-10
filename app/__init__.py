@@ -19,5 +19,7 @@ def create_app():
     socketio.init_app(app)
     login_manager.init_app(app)
     from app.http.routes import register_routes
+    from app.realtime.events import register_socketio_handlers
     register_routes(app)
+    register_socketio_handlers()
     return app
