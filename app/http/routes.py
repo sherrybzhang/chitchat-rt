@@ -2,9 +2,11 @@ from flask import render_template, request, session, redirect, url_for, make_res
 
 from app.services.room_services import (
     rooms,
-    room_exists,
     create_room,
     get_room_messages,
+    room_exists,
+    validate_create_request,
+    validate_join_request,
 )
 
 
@@ -37,16 +39,15 @@ def register_routes(app):
             create = request.form.get("create", False)
             room = code
 
-            if join != False and not code:
-                return render_template("chatroomEntry.html", error="Please enter a room code.", code=code, name=name)
+            if join != False:
+                join_error = validate_join_request(code)
+                if join_error:
+                    return render_template("chatroomEntry.html", error=join_error, code=code, name=name)
 
-            if create != False and room_exists(room):
-                return render_template(
-                    "chatroomEntry.html",
-                    error="Room already exists. Click 'Join a Channel' to join. ",
-                    code=code,
-                    name=name,
-                )
+            if create != False:
+                create_error = validate_create_request(code)
+                if create_error:
+                    return render_template("chatroomEntry.html", error=create_error, code=code, name=name)
 
             if create != False and not room_exists(room):
                 create_room(room)
