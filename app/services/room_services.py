@@ -1,5 +1,20 @@
 rooms = {}
 
+def validate_join_request(code):
+    if not code:
+        return "Please enter a room code."
+    if not room_exists(code):
+        return "Room does not exist."
+    return None
+
+
+def validate_create_request(code):
+    if not code:
+        return "Please enter a room code."
+    if room_exists(code):
+        return "Room already exists. Click 'Join a Channel' to join. "
+    return None
+
 
 def room_exists(code):
     return code in rooms
