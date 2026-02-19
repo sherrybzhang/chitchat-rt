@@ -4,8 +4,8 @@ from app.services.room_services import (
     build_room_view_context,
     room_exists,
     resolve_room_entry,
-    validate_name,
 )
+from app.services.room_validation import validate_name
 
 
 def register_routes(app):
