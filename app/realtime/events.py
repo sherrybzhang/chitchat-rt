@@ -3,27 +3,36 @@ from flask_socketio import join_room, leave_room, send
 
 from app import socketio
 from app.services.room_services import room_exists, add_message, add_member, remove_member
+from app.services.socketio_validation import validate_message_payload, validate_socket_session
 
 
 def register_socketio_handlers():
     @socketio.on("message")
     def message(data):
-        room = session.get("room")
+        room, name = validate_socket_session(session.get("room"), session.get("name"))
+        if not room or not name:
+            return
         if not room_exists(room):
             return
 
+        message_text = validate_message_payload(data)
+        if message_text is None:
+            return
+
         content = {
-            "name": session.get("name"),
-            "message": data["data"],
+            "name": name,
+            "message": message_text,
         }
         send(content, to=room)
         add_message(room, content)
-        print(f"{session.get('name')} said: {data['data']}")
+        print(f"{name} said: {message_text}")
 
     @socketio.on("connect")
     def connect(auth):
-        room = session.get("room")
-        name = session.get("name")
+        if auth is not None and not isinstance(auth, dict):
+            return
+
+        room, name = validate_socket_session(session.get("room"), session.get("name"))
         if not room or not name:
             return
         if not room_exists(room):
@@ -37,8 +46,10 @@ def register_socketio_handlers():
 
     @socketio.on("disconnect")
     def disconnect():
-        room = session.get("room")
-        name = session.get("name")
+        room, name = validate_socket_session(session.get("room"), session.get("name"))
+        if not room or not name:
+            return
+
         leave_room(room)
 
         if room_exists(room):
