@@ -9,18 +9,18 @@
 {% block content %}
 <div class="message-box" style="width: 400px;">
   <center>
-    <form method="post" action="/newRoom">
+    <form method="post" action="{{ url_for('new_room') }}">
       <button class="buttons" style="color: rgb(0, 136, 255); border: none; background-color: whitesmoke;">
         + Join or create another chat
       </button>
     </form>
   </center>
-  <form method="post" action="/viewChannel">
+  <form method="post" action="{{ url_for('view_channel') }}">
     <h2>Other Existing Channels</h2>
     {% for room in rooms %}
     <ul>
       <li>
-        <a href="{{ url_for('view_room', roomCode=room) }}" style="text-decoration: none;">
+        <a href="{{ url_for('view_room', room_code=room) }}" style="text-decoration: none;">
           {{ room }}
         </a>
       </li>
