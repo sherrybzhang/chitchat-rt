@@ -33,6 +33,8 @@ def register_routes(app):
 
             return render_template("chatroomEntry.html")
 
+        return render_template("index.html")
+
     @app.route("/chatroomEntry", methods=["POST", "GET"])
     def chatroomEntry():
         if request.method == "POST":
@@ -102,6 +104,8 @@ def register_routes(app):
         if request.method == "POST":
             return render_template("chatroomEntry.html")
 
+        return redirect(url_for("chatroomEntry"))
+
     @app.route("/viewChannel", methods=["POST", "GET"])
     def viewChannel():
         if request.method == "POST":
@@ -113,5 +117,7 @@ def register_routes(app):
                 return redirect(url_for("chatroomEntry"))
 
             return render_template("room.html", code=room, rooms=list_rooms(), messages=get_room_messages(room))
+
+        return redirect(url_for("chatroomEntry"))
 
     return app
