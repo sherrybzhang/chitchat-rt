@@ -3,18 +3,14 @@ import logging
 from flask import Flask, render_template, request, session, redirect, url_for, make_response
 from flask.typing import ResponseReturnValue
 
-from app.services.room_services import (
-    build_room_view_context,
-    room_exists,
-    resolve_room_entry,
-)
+from app.services.room_services import RoomService
 from app.services.room_validation import validate_name
 
 _ROOM_CODE_COOKIE = "room_code"
 logger = logging.getLogger(__name__)
 
 
-def register_routes(app: Flask) -> Flask:
+def register_routes(app: Flask, room_service: RoomService) -> Flask:
     @app.before_request
     def make_session_permanent() -> None:
         session.permanent = True
@@ -44,7 +40,7 @@ def register_routes(app: Flask) -> Flask:
             code = request.form.get("code")
             join = request.form.get("join", False)
             create = request.form.get("create", False)
-            room, entry_error = resolve_room_entry(
+            room, entry_error = room_service.resolve_room_entry(
                 name=name,
                 code=code,
                 wants_join=join != False,
@@ -54,7 +50,7 @@ def register_routes(app: Flask) -> Flask:
                 return render_template("chatroom_entry.html", error=entry_error, code=code, name=name)
 
             session["room"] = room
-            room_context, room_error = build_room_view_context(name=name, room_code=room)
+            room_context, room_error = room_service.build_room_view_context(name=name, room_code=room)
             if room_error:
                 return render_template("chatroom_entry.html", error=room_error, code=code, name=name)
 
@@ -65,10 +61,10 @@ def register_routes(app: Flask) -> Flask:
     @app.route("/room")
     def room() -> ResponseReturnValue:
         room_code = request.cookies.get(_ROOM_CODE_COOKIE)
-        if room_code and room_exists(room_code):
+        if room_code and room_service.room_exists(room_code):
             session["room"] = room_code
         room = session.get("room")
-        room_context, room_access_error = build_room_view_context(
+        room_context, room_access_error = room_service.build_room_view_context(
             name=session.get("name"),
             room_code=room,
         )
@@ -79,7 +75,7 @@ def register_routes(app: Flask) -> Flask:
 
     @app.route("/room/<room_code>")
     def view_room(room_code: str) -> ResponseReturnValue:
-        if not room_exists(room_code):
+        if not room_service.room_exists(room_code):
             return redirect(url_for("chatroom_entry"))
 
         session["room"] = room_code
@@ -103,7 +99,7 @@ def register_routes(app: Flask) -> Flask:
             room = request.form["room"]
             logger.debug("Selected room from channel list: %s", room)
             session["room"] = room
-            room_context, room_access_error = build_room_view_context(
+            room_context, room_access_error = room_service.build_room_view_context(
                 name=session.get("name"),
                 room_code=room,
             )
