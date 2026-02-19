@@ -5,6 +5,8 @@ from app.services.room_services import (
     get_room_messages,
     list_rooms,
     room_exists,
+    validate_name,
+    validate_room_access,
     validate_create_request,
     validate_join_request,
 )
@@ -25,8 +27,9 @@ def register_routes(app):
             name = request.form.get("name")
             session["name"] = name
 
-            if not name:
-                return render_template("index.html", error="* Please enter a name", name=name)
+            name_error = validate_name(name)
+            if name_error:
+                return render_template("index.html", error=name_error, name=name)
 
             return render_template("chatroomEntry.html")
 
@@ -52,7 +55,12 @@ def register_routes(app):
             if create != False and not room_exists(room):
                 create_room(room)
             elif not room_exists(code):
-                return render_template("chatroomEntry.html", error="Room does not exist.", code=code, name=name)
+                return render_template(
+                    "chatroomEntry.html",
+                    error=validate_join_request(code),
+                    code=code,
+                    name=name,
+                )
             session["room"] = room
             return render_template(
                 "room.html",
@@ -70,7 +78,8 @@ def register_routes(app):
         if roomCode and room_exists(roomCode):
             session["room"] = roomCode
         room = session.get("room")
-        if room is None or session.get("name") is None or not room_exists(room):
+        room_access_error = validate_room_access(room, session.get("name"))
+        if room_access_error:
             return redirect(url_for("chatroomEntry"))
 
         return render_template("room.html", code=room, rooms=list_rooms(), messages=get_room_messages(room))
@@ -99,7 +108,8 @@ def register_routes(app):
             room = request.form["room"]
             print(room)
             session["room"] = room
-            if room is None or session.get("name") is None or not room_exists(room):
+            room_access_error = validate_room_access(room, session.get("name"))
+            if room_access_error:
                 return redirect(url_for("chatroomEntry"))
 
             return render_template("room.html", code=room, rooms=list_rooms(), messages=get_room_messages(room))
