@@ -1,14 +1,10 @@
 from flask import render_template, request, session, redirect, url_for, make_response
 
 from app.services.room_services import (
-    create_room,
-    get_room_messages,
-    list_rooms,
+    build_room_view_context,
     room_exists,
+    resolve_room_entry,
     validate_name,
-    validate_room_access,
-    validate_create_request,
-    validate_join_request,
 )
 
 
@@ -42,35 +38,21 @@ def register_routes(app):
             code = request.form.get("code")
             join = request.form.get("join", False)
             create = request.form.get("create", False)
-            room = code
-
-            if join != False:
-                join_error = validate_join_request(code)
-                if join_error:
-                    return render_template("chatroomEntry.html", error=join_error, code=code, name=name)
-
-            if create != False:
-                create_error = validate_create_request(code)
-                if create_error:
-                    return render_template("chatroomEntry.html", error=create_error, code=code, name=name)
-
-            if create != False and not room_exists(room):
-                create_room(room)
-            elif not room_exists(code):
-                return render_template(
-                    "chatroomEntry.html",
-                    error=validate_join_request(code),
-                    code=code,
-                    name=name,
-                )
-            session["room"] = room
-            return render_template(
-                "room.html",
-                rooms=list_rooms(),
-                code=code,
+            room, entry_error = resolve_room_entry(
                 name=name,
-                messages=get_room_messages(room),
+                code=code,
+                wants_join=join != False,
+                wants_create=create != False,
             )
+            if entry_error:
+                return render_template("chatroomEntry.html", error=entry_error, code=code, name=name)
+
+            session["room"] = room
+            room_context, room_error = build_room_view_context(name=name, room_code=room)
+            if room_error:
+                return render_template("chatroomEntry.html", error=room_error, code=code, name=name)
+
+            return render_template("room.html", **room_context)
 
         return render_template("chatroomEntry.html")
 
@@ -80,11 +62,14 @@ def register_routes(app):
         if roomCode and room_exists(roomCode):
             session["room"] = roomCode
         room = session.get("room")
-        room_access_error = validate_room_access(room, session.get("name"))
+        room_context, room_access_error = build_room_view_context(
+            name=session.get("name"),
+            room_code=room,
+        )
         if room_access_error:
             return redirect(url_for("chatroomEntry"))
 
-        return render_template("room.html", code=room, rooms=list_rooms(), messages=get_room_messages(room))
+        return render_template("room.html", **room_context)
 
     @app.route("/room/<roomCode>")
     def view_room(roomCode):
@@ -112,11 +97,14 @@ def register_routes(app):
             room = request.form["room"]
             print(room)
             session["room"] = room
-            room_access_error = validate_room_access(room, session.get("name"))
+            room_context, room_access_error = build_room_view_context(
+                name=session.get("name"),
+                room_code=room,
+            )
             if room_access_error:
                 return redirect(url_for("chatroomEntry"))
 
-            return render_template("room.html", code=room, rooms=list_rooms(), messages=get_room_messages(room))
+            return render_template("room.html", **room_context)
 
         return redirect(url_for("chatroomEntry"))
 
