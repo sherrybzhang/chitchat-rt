@@ -1,4 +1,6 @@
-rooms = {}
+from app.storage.memory_store import RoomMemoryStore
+
+room_store = RoomMemoryStore()
 
 def validate_join_request(code):
     if not code:
@@ -17,46 +19,32 @@ def validate_create_request(code):
 
 
 def room_exists(code):
-    return code in rooms
+    return room_store.exists(code)
 
 
 def create_room(code):
-    rooms[code] = {"members": 0, "messages": []}
-    return rooms[code]
+    return room_store.create(code)
 
 
 def get_room(code):
-    return rooms.get(code)
+    return room_store.get(code)
 
 
 def get_room_messages(code):
-    room = rooms.get(code)
-    if not room:
-        return None
-    return room["messages"]
+    return room_store.get_messages(code)
 
 
 def add_message(code, content):
-    room = rooms.get(code)
-    if not room:
-        return False
-    room["messages"].append(content)
-    return True
+    return room_store.add_message(code, content)
 
 
 def add_member(code):
-    room = rooms.get(code)
-    if not room:
-        return False
-    room["members"] += 1
-    return True
+    return room_store.add_member(code)
 
 
 def remove_member(code):
-    room = rooms.get(code)
-    if not room:
-        return False
-    room["members"] -= 1
-    if room["members"] <= 0:
-        del rooms[code]
-    return True
+    return room_store.remove_member(code)
+
+
+def list_rooms():
+    return room_store.room_codes()
