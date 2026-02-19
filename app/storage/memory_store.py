@@ -2,7 +2,7 @@ from app.storage.room_store import RoomMessage, RoomRecord, RoomStore
 
 
 class RoomMemoryStore(RoomStore):
-    def __init__(self):
+    def __init__(self) -> None:
         self._rooms: dict[str, RoomRecord] = {}
 
     def exists(self, code: str) -> bool:

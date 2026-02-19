@@ -1,3 +1,5 @@
+from typing import Any
+
 from flask import session
 from flask_socketio import join_room, leave_room, send
 
@@ -6,9 +8,9 @@ from app.services.room_services import room_exists, add_message, add_member, rem
 from app.services.socketio_validation import validate_message_payload, validate_socket_session
 
 
-def register_socketio_handlers():
+def register_socketio_handlers() -> None:
     @socketio.on("message")
-    def message(data):
+    def message(data: dict[str, Any]) -> None:
         room, name = validate_socket_session(session.get("room"), session.get("name"))
         if not room or not name:
             return
@@ -28,7 +30,7 @@ def register_socketio_handlers():
         print(f"{name} said: {message_text}")
 
     @socketio.on("connect")
-    def connect(auth):
+    def connect(auth: object | None) -> None:
         if auth is not None and not isinstance(auth, dict):
             return
 
@@ -45,7 +47,7 @@ def register_socketio_handlers():
         print(f"{name} joined room {room}")
 
     @socketio.on("disconnect")
-    def disconnect():
+    def disconnect() -> None:
         room, name = validate_socket_session(session.get("room"), session.get("name"))
         if not room or not name:
             return

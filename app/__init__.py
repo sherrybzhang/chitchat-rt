@@ -6,9 +6,7 @@ from flask_socketio import SocketIO
 from dotenv import load_dotenv
 
 socketio = SocketIO()
-
-
-def create_app():
+def create_app() -> Flask:
     repo_root = Path(__file__).resolve().parent.parent
     load_dotenv(repo_root / ".env")
     app = Flask(
