@@ -3,7 +3,7 @@ var socketio = io();
 const messages = document.getElementById("messages");
 
 const createMessage = (name, msg) => {
-    
+
     const content = `
     <div class="text">
         <span>
@@ -12,7 +12,7 @@ const createMessage = (name, msg) => {
         <span class="muted">
             ${new Date().toLocaleString()}
         </span>
-        <i onClick="myFunction(this)" class="fa fa-thumbs-up"></i>
+        <i onclick="toggleThumb(this)" class="fa fa-thumbs-up"></i>
     </div>
     `;
     messages.innerHTML += content;
@@ -22,13 +22,13 @@ socketio.on("message", (data) => {
     createMessage(data.name, data.message);
 });
 
-const sendMessage = () => {
+function sendMessage() {
     const message = document.getElementById("message");
     if (message.value == "") return;
     socketio.emit("message", { data: message.value });
     message.value = "";
-};
+}
 
-function myFunction(x) {
+function toggleThumb(x) {
     x.classList.toggle("fa-thumbs-down");
 };
