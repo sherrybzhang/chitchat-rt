@@ -1,8 +1,10 @@
+import os
 from pathlib import Path
 
 from flask import Flask
 from flask_login import LoginManager
 from flask_socketio import SocketIO
+from dotenv import load_dotenv
 
 socketio = SocketIO()
 login_manager = LoginManager()
@@ -10,12 +12,16 @@ login_manager = LoginManager()
 
 def create_app():
     repo_root = Path(__file__).resolve().parent.parent
+    load_dotenv(repo_root / ".env")
     app = Flask(
         __name__,
         template_folder=str(repo_root / "templates"),
         static_folder=str(repo_root / "static"),
     )
-    app.config["SECRET_KEY"] = "hjhjsdahhds"
+    secret_key = os.environ.get("SECRET_KEY")
+    if not secret_key:
+        raise RuntimeError("SECRET_KEY is not set. Add it to your environment or .env before running the app.")
+    app.config["SECRET_KEY"] = secret_key
     socketio.init_app(app)
     login_manager.init_app(app)
     from app.auth import register_auth
