@@ -1,4 +1,3 @@
-from app.storage.memory_store import RoomMemoryStore
 from app.storage.room_store import RoomMessage, RoomRecord, RoomStore
 from app.services.room_validation import (
     validate_create_request,
@@ -6,85 +5,75 @@ from app.services.room_validation import (
     validate_room_access,
 )
 
-_room_store: RoomStore = RoomMemoryStore()
 
+class RoomService:
+    def __init__(self, room_store: RoomStore) -> None:
+        self._room_store = room_store
 
-def configure_room_store(store: RoomStore) -> None:
-    global _room_store
-    _room_store = store
+    def resolve_room_entry(
+        self,
+        name: str | None,
+        code: str | None,
+        wants_join: bool,
+        wants_create: bool,
+    ) -> tuple[str | None, str | None]:
+        room_code = (code or "").strip()
 
+        if wants_join:
+            join_error = validate_join_request(room_code, self.room_exists)
+            if join_error:
+                return None, join_error
 
-def resolve_room_entry(
-    name: str | None,
-    code: str | None,
-    wants_join: bool,
-    wants_create: bool,
-) -> tuple[str | None, str | None]:
-    room_code = (code or "").strip()
+        if wants_create:
+            create_error = validate_create_request(room_code, self.room_exists)
+            if create_error:
+                return None, create_error
+            self.create_room(room_code)
 
-    if wants_join:
-        join_error = validate_join_request(room_code, room_exists)
-        if join_error:
-            return None, join_error
+        if not self.room_exists(room_code):
+            return None, validate_join_request(room_code, self.room_exists)
 
-    if wants_create:
-        create_error = validate_create_request(room_code, room_exists)
-        if create_error:
-            return None, create_error
-        create_room(room_code)
+        room_access_error = validate_room_access(room_code, name, self.room_exists)
+        if room_access_error:
+            return None, room_access_error
 
-    if not room_exists(room_code):
-        return None, validate_join_request(room_code, room_exists)
+        return room_code, None
 
-    room_access_error = validate_room_access(room_code, name, room_exists)
-    if room_access_error:
-        return None, room_access_error
+    def room_exists(self, code: str) -> bool:
+        return self._room_store.exists(code)
 
-    return room_code, None
+    def create_room(self, code: str) -> RoomRecord:
+        return self._room_store.create(code)
 
+    def get_room(self, code: str) -> RoomRecord | None:
+        return self._room_store.get(code)
 
-def room_exists(code: str) -> bool:
-    return _room_store.exists(code)
+    def get_room_messages(self, code: str) -> list[RoomMessage] | None:
+        return self._room_store.get_messages(code)
 
+    def add_message(self, code: str, content: RoomMessage) -> bool:
+        return self._room_store.add_message(code, content)
 
-def create_room(code: str) -> RoomRecord:
-    return _room_store.create(code)
+    def add_member(self, code: str) -> bool:
+        return self._room_store.add_member(code)
 
+    def remove_member(self, code: str) -> bool:
+        return self._room_store.remove_member(code)
 
-def get_room(code: str) -> RoomRecord | None:
-    return _room_store.get(code)
+    def list_rooms(self) -> list[str]:
+        return self._room_store.room_codes()
 
+    def build_room_view_context(
+        self,
+        name: str | None,
+        room_code: str | None,
+    ) -> tuple[dict[str, object] | None, str | None]:
+        room_access_error = validate_room_access(room_code, name, self.room_exists)
+        if room_access_error:
+            return None, room_access_error
 
-def get_room_messages(code: str) -> list[RoomMessage] | None:
-    return _room_store.get_messages(code)
-
-
-def add_message(code: str, content: RoomMessage) -> bool:
-    return _room_store.add_message(code, content)
-
-
-def add_member(code: str) -> bool:
-    return _room_store.add_member(code)
-
-
-def remove_member(code: str) -> bool:
-    return _room_store.remove_member(code)
-
-
-def list_rooms() -> list[str]:
-    return _room_store.room_codes()
-
-
-def build_room_view_context(
-    name: str | None,
-    room_code: str | None,
-) -> tuple[dict[str, object] | None, str | None]:
-    room_access_error = validate_room_access(room_code, name, room_exists)
-    if room_access_error:
-        return None, room_access_error
-
-    return {
-        "code": room_code,
-        "rooms": list_rooms(),
-        "messages": get_room_messages(room_code),
-    }, None
+        return {
+            "code": room_code,
+            "rooms": self.list_rooms(),
+            "messages": self.get_room_messages(room_code),
+        }, None
