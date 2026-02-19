@@ -1,4 +1,8 @@
+import logging
+
 from app import create_app, socketio
+
+logging.basicConfig(level=logging.INFO)
 
 app = create_app()
 

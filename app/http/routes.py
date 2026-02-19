@@ -1,3 +1,5 @@
+import logging
+
 from flask import Flask, render_template, request, session, redirect, url_for, make_response
 from flask.typing import ResponseReturnValue
 
@@ -9,6 +11,7 @@ from app.services.room_services import (
 from app.services.room_validation import validate_name
 
 _ROOM_CODE_COOKIE = "room_code"
+logger = logging.getLogger(__name__)
 
 
 def register_routes(app: Flask) -> Flask:
@@ -98,7 +101,7 @@ def register_routes(app: Flask) -> Flask:
     def view_channel() -> ResponseReturnValue:
         if request.method == "POST":
             room = request.form["room"]
-            print(room)
+            logger.debug("Selected room from channel list: %s", room)
             session["room"] = room
             room_context, room_access_error = build_room_view_context(
                 name=session.get("name"),
