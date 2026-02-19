@@ -1,9 +1,9 @@
 from flask import render_template, request, session, redirect, url_for, make_response
 
 from app.services.room_services import (
-    rooms,
     create_room,
     get_room_messages,
+    list_rooms,
     room_exists,
     validate_create_request,
     validate_join_request,
@@ -56,7 +56,7 @@ def register_routes(app):
             session["room"] = room
             return render_template(
                 "room.html",
-                rooms=rooms,
+                rooms=list_rooms(),
                 code=code,
                 name=name,
                 messages=get_room_messages(room),
@@ -73,7 +73,7 @@ def register_routes(app):
         if room is None or session.get("name") is None or not room_exists(room):
             return redirect(url_for("chatroomEntry"))
 
-        return render_template("room.html", code=room, rooms=rooms, messages=get_room_messages(room))
+        return render_template("room.html", code=room, rooms=list_rooms(), messages=get_room_messages(room))
 
     @app.route("/room/<roomCode>")
     def view_room(roomCode):
@@ -102,6 +102,6 @@ def register_routes(app):
             if room is None or session.get("name") is None or not room_exists(room):
                 return redirect(url_for("chatroomEntry"))
 
-            return render_template("room.html", code=room, rooms=rooms, messages=get_room_messages(room))
+            return render_template("room.html", code=room, rooms=list_rooms(), messages=get_room_messages(room))
 
     return app
