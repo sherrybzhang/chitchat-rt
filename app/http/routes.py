@@ -1,6 +1,5 @@
-from typing import Any
-
 from flask import Flask, render_template, request, session, redirect, url_for, make_response
+from flask.typing import ResponseReturnValue
 
 from app.services.room_services import (
     build_room_view_context,
@@ -18,11 +17,11 @@ def register_routes(app: Flask) -> Flask:
         session.permanent = True
 
     @app.route("/", methods=["POST", "GET"])
-    def index() -> Any:
+    def index() -> ResponseReturnValue:
         return render_template("index.html")
 
     @app.route("/chat", methods=["POST", "GET"])
-    def chat() -> Any:
+    def chat() -> ResponseReturnValue:
         if request.method == "POST":
             name = request.form.get("name")
             session["name"] = name
@@ -36,7 +35,7 @@ def register_routes(app: Flask) -> Flask:
         return render_template("index.html")
 
     @app.route("/chatroom-entry", methods=["POST", "GET"])
-    def chatroom_entry() -> Any:
+    def chatroom_entry() -> ResponseReturnValue:
         if request.method == "POST":
             name = session.get("name")
             code = request.form.get("code")
@@ -61,7 +60,7 @@ def register_routes(app: Flask) -> Flask:
         return render_template("chatroom_entry.html")
 
     @app.route("/room")
-    def room() -> Any:
+    def room() -> ResponseReturnValue:
         room_code = request.cookies.get(_ROOM_CODE_COOKIE)
         if room_code and room_exists(room_code):
             session["room"] = room_code
@@ -76,7 +75,7 @@ def register_routes(app: Flask) -> Flask:
         return render_template("room.html", **room_context)
 
     @app.route("/room/<room_code>")
-    def view_room(room_code: str) -> Any:
+    def view_room(room_code: str) -> ResponseReturnValue:
         if not room_exists(room_code):
             return redirect(url_for("chatroom_entry"))
 
@@ -89,14 +88,14 @@ def register_routes(app: Flask) -> Flask:
         return response
 
     @app.route("/new-room", methods=["POST", "GET"])
-    def new_room() -> Any:
+    def new_room() -> ResponseReturnValue:
         if request.method == "POST":
             return render_template("chatroom_entry.html")
 
         return redirect(url_for("chatroom_entry"))
 
     @app.route("/view-channel", methods=["POST", "GET"])
-    def view_channel() -> Any:
+    def view_channel() -> ResponseReturnValue:
         if request.method == "POST":
             room = request.form["room"]
             print(room)
