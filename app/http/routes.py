@@ -31,8 +31,8 @@ def register_routes(app):
 
         return render_template("index.html")
 
-    @app.route("/chatroomEntry", methods=["POST", "GET"])
-    def chatroomEntry():
+    @app.route("/chatroom-entry", methods=["POST", "GET"])
+    def chatroom_entry():
         if request.method == "POST":
             name = session.get("name")
             code = request.form.get("code")
@@ -67,32 +67,32 @@ def register_routes(app):
             room_code=room,
         )
         if room_access_error:
-            return redirect(url_for("chatroomEntry"))
+            return redirect(url_for("chatroom_entry"))
 
         return render_template("room.html", **room_context)
 
-    @app.route("/room/<roomCode>")
-    def view_room(roomCode):
-        if not room_exists(roomCode):
-            return redirect(url_for("chatroomEntry"))
+    @app.route("/room/<room_code>")
+    def view_room(room_code):
+        if not room_exists(room_code):
+            return redirect(url_for("chatroom_entry"))
 
-        session["room"] = roomCode
+        session["room"] = room_code
         session.modified = True
 
         # Set the cookie
         response = make_response(redirect(url_for("room")))
-        response.set_cookie("roomCode", roomCode)
+        response.set_cookie("roomCode", room_code)
         return response
 
-    @app.route("/newRoom", methods=["POST", "GET"])
-    def newRoom():
+    @app.route("/new-room", methods=["POST", "GET"])
+    def new_room():
         if request.method == "POST":
             return render_template("chatroomEntry.html")
 
-        return redirect(url_for("chatroomEntry"))
+        return redirect(url_for("chatroom_entry"))
 
-    @app.route("/viewChannel", methods=["POST", "GET"])
-    def viewChannel():
+    @app.route("/view-channel", methods=["POST", "GET"])
+    def view_channel():
         if request.method == "POST":
             room = request.form["room"]
             print(room)
@@ -102,10 +102,10 @@ def register_routes(app):
                 room_code=room,
             )
             if room_access_error:
-                return redirect(url_for("chatroomEntry"))
+                return redirect(url_for("chatroom_entry"))
 
             return render_template("room.html", **room_context)
 
-        return redirect(url_for("chatroomEntry"))
+        return redirect(url_for("chatroom_entry"))
 
     return app

@@ -7,7 +7,7 @@
 {% block content %}
 <center class="channel-box">
   <div class="welcome">
-    <form action="/chatroomEntry"method="post" class="buttons">
+    <form action="{{ url_for('chatroom_entry') }}" method="post" class="buttons">
       <h3>Enter a Chat Room</h3>
       <div class="join">
         <label style="margin-right: 10px;">Room:</label>

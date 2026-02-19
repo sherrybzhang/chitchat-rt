@@ -12,7 +12,7 @@
       with other fellow ChitChatters around the world. Enter a display name below and 
       begin chatting today!
     </p>
-    <form method="post" action="/chat">
+    <form method="post" action="{{ url_for('chat') }}">
       <div style="margin-top: 30px; margin-bottom: 40px;">
         <label style="margin-right: 10px;">Name:</label>
         <input
