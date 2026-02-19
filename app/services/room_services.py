@@ -1,11 +1,17 @@
 from app.storage.memory_store import RoomMemoryStore
+from app.storage.room_store import RoomMessage, RoomRecord, RoomStore
 from app.services.room_validation import (
     validate_create_request,
     validate_join_request,
     validate_room_access,
 )
 
-room_store = RoomMemoryStore()
+room_store: RoomStore = RoomMemoryStore()
+
+
+def configure_room_store(store: RoomStore) -> None:
+    global room_store
+    room_store = store
 
 
 def resolve_room_entry(name, code, wants_join, wants_create):
@@ -32,35 +38,35 @@ def resolve_room_entry(name, code, wants_join, wants_create):
     return room_code, None
 
 
-def room_exists(code):
+def room_exists(code: str) -> bool:
     return room_store.exists(code)
 
 
-def create_room(code):
+def create_room(code: str) -> RoomRecord:
     return room_store.create(code)
 
 
-def get_room(code):
+def get_room(code: str) -> RoomRecord | None:
     return room_store.get(code)
 
 
-def get_room_messages(code):
+def get_room_messages(code: str) -> list[RoomMessage] | None:
     return room_store.get_messages(code)
 
 
-def add_message(code, content):
+def add_message(code: str, content: RoomMessage) -> bool:
     return room_store.add_message(code, content)
 
 
-def add_member(code):
+def add_member(code: str) -> bool:
     return room_store.add_member(code)
 
 
-def remove_member(code):
+def remove_member(code: str) -> bool:
     return room_store.remove_member(code)
 
 
-def list_rooms():
+def list_rooms() -> list[str]:
     return room_store.room_codes()
 
 
