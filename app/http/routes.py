@@ -7,6 +7,8 @@ from app.services.room_services import (
 )
 from app.services.room_validation import validate_name
 
+_ROOM_CODE_COOKIE = "room_code"
+
 
 def register_routes(app):
     @app.before_request
@@ -27,7 +29,7 @@ def register_routes(app):
             if name_error:
                 return render_template("index.html", error=name_error, name=name)
 
-            return render_template("chatroomEntry.html")
+            return render_template("chatroom_entry.html")
 
         return render_template("index.html")
 
@@ -45,22 +47,22 @@ def register_routes(app):
                 wants_create=create != False,
             )
             if entry_error:
-                return render_template("chatroomEntry.html", error=entry_error, code=code, name=name)
+                return render_template("chatroom_entry.html", error=entry_error, code=code, name=name)
 
             session["room"] = room
             room_context, room_error = build_room_view_context(name=name, room_code=room)
             if room_error:
-                return render_template("chatroomEntry.html", error=room_error, code=code, name=name)
+                return render_template("chatroom_entry.html", error=room_error, code=code, name=name)
 
             return render_template("room.html", **room_context)
 
-        return render_template("chatroomEntry.html")
+        return render_template("chatroom_entry.html")
 
     @app.route("/room")
     def room():
-        roomCode = request.cookies.get("roomCode")
-        if roomCode and room_exists(roomCode):
-            session["room"] = roomCode
+        room_code = request.cookies.get(_ROOM_CODE_COOKIE)
+        if room_code and room_exists(room_code):
+            session["room"] = room_code
         room = session.get("room")
         room_context, room_access_error = build_room_view_context(
             name=session.get("name"),
@@ -81,13 +83,13 @@ def register_routes(app):
 
         # Set the cookie
         response = make_response(redirect(url_for("room")))
-        response.set_cookie("roomCode", room_code)
+        response.set_cookie(_ROOM_CODE_COOKIE, room_code)
         return response
 
     @app.route("/new-room", methods=["POST", "GET"])
     def new_room():
         if request.method == "POST":
-            return render_template("chatroomEntry.html")
+            return render_template("chatroom_entry.html")
 
         return redirect(url_for("chatroom_entry"))
 

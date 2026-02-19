@@ -6,12 +6,12 @@ from app.services.room_validation import (
     validate_room_access,
 )
 
-room_store: RoomStore = RoomMemoryStore()
+_room_store: RoomStore = RoomMemoryStore()
 
 
 def configure_room_store(store: RoomStore) -> None:
-    global room_store
-    room_store = store
+    global _room_store
+    _room_store = store
 
 
 def resolve_room_entry(name, code, wants_join, wants_create):
@@ -39,35 +39,35 @@ def resolve_room_entry(name, code, wants_join, wants_create):
 
 
 def room_exists(code: str) -> bool:
-    return room_store.exists(code)
+    return _room_store.exists(code)
 
 
 def create_room(code: str) -> RoomRecord:
-    return room_store.create(code)
+    return _room_store.create(code)
 
 
 def get_room(code: str) -> RoomRecord | None:
-    return room_store.get(code)
+    return _room_store.get(code)
 
 
 def get_room_messages(code: str) -> list[RoomMessage] | None:
-    return room_store.get_messages(code)
+    return _room_store.get_messages(code)
 
 
 def add_message(code: str, content: RoomMessage) -> bool:
-    return room_store.add_message(code, content)
+    return _room_store.add_message(code, content)
 
 
 def add_member(code: str) -> bool:
-    return room_store.add_member(code)
+    return _room_store.add_member(code)
 
 
 def remove_member(code: str) -> bool:
-    return room_store.remove_member(code)
+    return _room_store.remove_member(code)
 
 
 def list_rooms() -> list[str]:
-    return room_store.room_codes()
+    return _room_store.room_codes()
 
 
 def build_room_view_context(name, room_code):
