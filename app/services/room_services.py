@@ -14,7 +14,12 @@ def configure_room_store(store: RoomStore) -> None:
     _room_store = store
 
 
-def resolve_room_entry(name, code, wants_join, wants_create):
+def resolve_room_entry(
+    name: str | None,
+    code: str | None,
+    wants_join: bool,
+    wants_create: bool,
+) -> tuple[str | None, str | None]:
     room_code = (code or "").strip()
 
     if wants_join:
@@ -70,7 +75,10 @@ def list_rooms() -> list[str]:
     return _room_store.room_codes()
 
 
-def build_room_view_context(name, room_code):
+def build_room_view_context(
+    name: str | None,
+    room_code: str | None,
+) -> tuple[dict[str, object] | None, str | None]:
     room_access_error = validate_room_access(room_code, name, room_exists)
     if room_access_error:
         return None, room_access_error

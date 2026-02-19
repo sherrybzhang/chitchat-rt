@@ -1,6 +1,6 @@
 MAX_MESSAGE_LENGTH = 500
 
-def validate_socket_session(room, name):
+def validate_socket_session(room: object, name: object) -> tuple[str | None, str | None]:
     if not isinstance(room, str):
         return None, None
     if not isinstance(name, str):
@@ -14,7 +14,7 @@ def validate_socket_session(room, name):
     return clean_room, clean_name
 
 
-def validate_message_payload(payload):
+def validate_message_payload(payload: object) -> str | None:
     if not isinstance(payload, dict):
         return None
 
