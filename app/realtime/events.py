@@ -1,9 +1,13 @@
+import logging
+
 from flask import session
 from flask_socketio import join_room, leave_room, send
 
 from app import socketio
 from app.services.room_services import room_exists, add_message, add_member, remove_member
 from app.services.socketio_validation import validate_message_payload, validate_socket_session
+
+logger = logging.getLogger(__name__)
 
 
 def register_socketio_handlers() -> None:
@@ -25,7 +29,7 @@ def register_socketio_handlers() -> None:
         }
         send(content, to=room)
         add_message(room, content)
-        print(f"{name} said: {message_text}")
+        logger.info("%s said: %s", name, message_text)
 
     @socketio.on("connect")
     def connect(auth: object | None) -> None:
@@ -42,7 +46,7 @@ def register_socketio_handlers() -> None:
         join_room(room)
         send({"name": name, "message": "has entered the room"}, to=room)
         add_member(room)
-        print(f"{name} joined room {room}")
+        logger.info("%s joined room %s", name, room)
 
     @socketio.on("disconnect")
     def disconnect() -> None:
@@ -56,4 +60,4 @@ def register_socketio_handlers() -> None:
             remove_member(room)
 
         send({"name": name, "message": "has left the room"}, to=room)
-        print(f"{name} has left the room {room}")
+        logger.info("%s has left the room %s", name, room)
