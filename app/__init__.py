@@ -2,12 +2,10 @@ import os
 from pathlib import Path
 
 from flask import Flask
-from flask_login import LoginManager
 from flask_socketio import SocketIO
 from dotenv import load_dotenv
 
 socketio = SocketIO()
-login_manager = LoginManager()
 
 
 def create_app():
@@ -23,11 +21,8 @@ def create_app():
         raise RuntimeError("SECRET_KEY is not set. Add it to your environment or .env before running the app.")
     app.config["SECRET_KEY"] = secret_key
     socketio.init_app(app)
-    login_manager.init_app(app)
-    from app.auth import register_auth
     from app.http.routes import register_routes
     from app.realtime.events import register_socketio_handlers
-    register_auth()
     register_routes(app)
     register_socketio_handlers()
     return app
