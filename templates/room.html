@@ -1,56 +1,53 @@
-{% extends 'base.html' %} 
-
-{% block head %}
-
-<script src="{{ url_for('static', filename='thumbsup.js') }}"></script>
-
-{% endblock %}
+{% extends 'base.html' %}
 
 {% block content %}
-<div class="message-box" style="width: 400px;">
-  <center>
+<section class="room-shell">
+  <aside class="room-sidebar">
     <form method="post" action="{{ url_for('new_room') }}">
-      <button class="buttons" style="color: rgb(0, 136, 255); border: none; background-color: whitesmoke;">
-        + Join or create another chat
-      </button>
+      <button class="text-btn">+ Join or create another chat</button>
     </form>
-  </center>
-  <form method="post" action="{{ url_for('view_channel') }}">
-    <h2>Other Existing Channels</h2>
-    {% for room in rooms %}
-    <ul>
-      <li>
-        <a href="{{ url_for('view_room', room_code=room) }}" style="text-decoration: none;">
-          {{ room }}
-        </a>
-      </li>
-    </ul>
-    {% endfor %}
-  </form>
-</div>
 
-<div class="message-box">
-  <h2>{{ code }}</h2>
-  <div class="messages" id="messages"></div>
-  <div class="inputs">
-    <input
-      type="text"
-      rows="3"
-      placeholder="Message"
-      name="message"
-      id="message"
-    />
-    <button type="button" name="send" id="send-btn" onclick="sendMessage()">
-      Send
-    </button>
+    <h2>Channels</h2>
+    <div class="channel-list">
+      {% for room in rooms %}
+      <a
+        href="{{ url_for('view_room', room_code=room) }}"
+        class="channel-pill {% if room == code %}is-active{% endif %}"
+      >
+        {{ room }}
+      </a>
+      {% endfor %}
+    </div>
+  </aside>
+
+  <div class="chat-panel">
+    <header class="chat-header">
+      <p class="eyebrow">Active room</p>
+      <h1>#{{ code }}</h1>
+    </header>
+
+    <div class="messages" id="messages" aria-live="polite"></div>
+
+    <div class="inputs">
+      <input
+        type="text"
+        placeholder="Write a message"
+        name="message"
+        id="message"
+        autocomplete="off"
+      />
+      <button type="button" name="send" id="send-btn" class="btn btn-primary">
+        Send
+      </button>
+    </div>
   </div>
-</div>
+</section>
 
 <script src="{{ url_for('static', filename='room.js') }}"></script>
 
 {% for msg in messages %}
 <script type="text/javascript">
-  createMessage("{{msg.name}}", "{{msg.message}}");
+  createMessage({{ msg.name|tojson }}, {{ msg.message|tojson }});
 </script>
-
-{% endfor %} {% endblock %}
+{% endfor %}
+{% endblock %}
