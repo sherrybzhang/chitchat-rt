@@ -1,27 +1,36 @@
-{% extends 'base.html' %} 
-
-{% block head %}
-
-{% endblock %}
+{% extends 'base.html' %}
 
 {% block content %}
-<center class="channel-box">
-  <div class="welcome">
-    <form action="{{ url_for('chatroom_entry') }}" method="post" class="buttons">
-      <h3>Enter a Chat Room</h3>
-      <div class="join">
-        <label style="margin-right: 10px;">Room:</label>
-        <input type="text" name="code" value="{{code}}" />
-        <button type="submit" name="join" style="margin-left: 10px;">Join a Channel</button>
+<section class="page page-entry">
+  <div class="card card-entry">
+    <p class="chip">Room Selection</p>
+    <h1>Join or Create a Channel</h1>
+    <p class="support-text">
+      Enter a room code to join an existing channel, or create a new one in one click.
+    </p>
+
+    <form action="{{ url_for('chatroom_entry') }}" method="post" class="stack-form">
+      <label for="code">Room code</label>
+      <div class="row-input">
+        <input
+          type="text"
+          id="code"
+          name="code"
+          value="{{ code }}"
+          placeholder="e.g. project-alpha"
+          autocomplete="off"
+        />
+        <button type="submit" name="join" class="btn btn-primary">Join Channel</button>
       </div>
-      <button type="submit" name="create" class="create-btn">Create a Channel</button>
-      <!-- Outputs error if conditions are not met for name input -->
+
+      <button type="submit" name="create" class="btn btn-secondary btn-full">
+        Create a New Channel
+      </button>
+
       {% if error %}
-      <ul>
-        <li>{{error}}</li>
-      </ul>
+      <p class="form-error">{{ error }}</p>
       {% endif %}
     </form>
   </div>
-</center>
+</section>
 {% endblock %}

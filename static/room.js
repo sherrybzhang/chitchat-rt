@@ -1,34 +1,93 @@
 var socketio = io();
 
 const messages = document.getElementById("messages");
+const messageInput = document.getElementById("message");
+const sendButton = document.getElementById("send-btn");
 
-const createMessage = (name, msg) => {
+function formatTimestamp() {
+  return new Date().toLocaleString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "short",
+    day: "numeric",
+  });
+}
 
-    const content = `
-    <div class="text">
-        <span>
-            <strong>${name}</strong>: ${msg}
-        </span>
-        <span class="muted">
-            ${new Date().toLocaleString()}
-        </span>
-        <i onclick="toggleThumb(this)" class="fa fa-thumbs-up"></i>
-    </div>
-    `;
-    messages.innerHTML += content;
-};
+function createMessage(name, msg) {
+  if (!messages) {
+    return;
+  }
+
+  const row = document.createElement("div");
+  row.className = "message-row";
+
+  const content = document.createElement("span");
+  content.className = "message-content";
+
+  const author = document.createElement("strong");
+  author.textContent = name;
+
+  content.appendChild(author);
+  content.appendChild(document.createTextNode(`: ${msg}`));
+
+  const meta = document.createElement("div");
+  meta.className = "message-meta";
+
+  const timestamp = document.createElement("span");
+  timestamp.className = "muted";
+  timestamp.textContent = formatTimestamp();
+
+  const reaction = document.createElement("button");
+  reaction.type = "button";
+  reaction.className = "reaction-btn";
+  reaction.setAttribute("aria-label", "Toggle like");
+
+  const icon = document.createElement("i");
+  icon.className = "fa fa-thumbs-up";
+  reaction.appendChild(icon);
+
+  reaction.addEventListener("click", function () {
+    reaction.classList.toggle("is-active");
+  });
+
+  meta.appendChild(timestamp);
+  meta.appendChild(reaction);
+
+  row.appendChild(content);
+  row.appendChild(meta);
+
+  messages.appendChild(row);
+  messages.scrollTop = messages.scrollHeight;
+}
 
 socketio.on("message", (data) => {
-    createMessage(data.name, data.message);
+  createMessage(data.name, data.message);
 });
 
 function sendMessage() {
-    const message = document.getElementById("message");
-    if (message.value == "") return;
-    socketio.emit("message", { data: message.value });
-    message.value = "";
+  if (!messageInput) {
+    return;
+  }
+
+  const messageValue = messageInput.value.trim();
+  if (!messageValue) {
+    return;
+  }
+
+  socketio.emit("message", { data: messageValue });
+  messageInput.value = "";
+  messageInput.focus();
 }
 
-function toggleThumb(x) {
-    x.classList.toggle("fa-thumbs-down");
-};
+if (messageInput) {
+  messageInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+}
+
+if (sendButton) {
+  sendButton.addEventListener("click", sendMessage);
+}

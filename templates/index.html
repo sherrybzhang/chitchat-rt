@@ -1,32 +1,35 @@
-{% extends 'base.html' %} 
-
-{% block head %}
-
-{% endblock %}
+{% extends 'base.html' %}
 
 {% block content %}
-<center class="message-box">
-  <div class="welcome">
-    <h1>Welcome to ChitChat!</h1>
-    <p style="margin-top: 20px;">ChitChat is a simple online messaging service that allows endless communication 
-      with other fellow ChitChatters around the world. Enter a display name below and 
-      begin chatting today!
+<section class="page page-landing">
+  <div class="card card-landing">
+    <p class="chip">Realtime Messaging</p>
+    <h1>Welcome to ChitChat</h1>
+    <p class="support-text">
+      ChitChat is a simple online messaging service that lets you connect with
+      fellow ChitChatters around the world. Enter a display name and start
+      chatting instantly.
     </p>
-    <form method="post" action="{{ url_for('chat') }}">
-      <div style="margin-top: 30px; margin-bottom: 40px;">
-        <label style="margin-right: 10px;">Name:</label>
+
+    <form method="post" action="{{ url_for('chat') }}" class="stack-form">
+      <label for="name">Display name</label>
+      <div class="row-input">
         <input
           type="text"
+          id="name"
           name="name"
-          value="{{name}}"
+          value="{{ name }}"
+          placeholder="e.g. Skyler"
+          autocomplete="nickname"
         />
-        <input type="submit" name="join" style="margin-left: 10px;" value="Enter">
-        {% if error %}
-        <p style="color: red;">{{ error }}</p>
-        {% endif %}
+        <input type="submit" name="join" class="btn btn-primary" value="Enter Chat" />
       </div>
+      {% if error %}
+      <p class="form-error">{{ error }}</p>
+      {% endif %}
     </form>
-    <img src="../static/bunny.png" class="bunny">
+
+    <img src="{{ url_for('static', filename='bunny.png') }}" class="bunny" alt="ChitChat mascot" />
   </div>
-</center>
+</section>
 {% endblock %}
