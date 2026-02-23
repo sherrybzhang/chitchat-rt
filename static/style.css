@@ -183,10 +183,6 @@ button:active,
   color: var(--error);
 }
 
-.bunny {
-  width: clamp(88px, 10vw, 116px);
-  margin-top: 24px;
-}
 
 .room-shell {
   width: min(1160px, 100%);
