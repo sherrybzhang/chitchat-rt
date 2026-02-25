@@ -18,17 +18,28 @@ function createMessage(name, msg) {
     return;
   }
 
+  const isJoinMessage = msg === "has entered the room";
+
   const row = document.createElement("div");
   row.className = "message-row";
+  if (isJoinMessage) {
+    row.classList.add("is-join");
+  }
 
   const content = document.createElement("span");
   content.className = "message-content";
 
-  const author = document.createElement("strong");
-  author.textContent = name;
+  if (isJoinMessage) {
+    const joinedText = document.createElement("strong");
+    joinedText.textContent = `${name} ${msg}`;
+    content.appendChild(joinedText);
+  } else {
+    const author = document.createElement("strong");
+    author.textContent = name;
 
-  content.appendChild(author);
-  content.appendChild(document.createTextNode(`: ${msg}`));
+    content.appendChild(author);
+    content.appendChild(document.createTextNode(`: ${msg}`));
+  }
 
   const meta = document.createElement("div");
   meta.className = "message-meta";

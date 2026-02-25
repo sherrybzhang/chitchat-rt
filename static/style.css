@@ -297,9 +297,18 @@ button:active,
   border: 1px solid rgba(53, 95, 53, 0.14);
 }
 
+.message-row.is-join {
+  background: rgba(135, 172, 135, 0.14);
+  border-color: rgba(53, 95, 53, 0.24);
+}
+
 .message-content {
   line-height: 1.45;
   overflow-wrap: anywhere;
+}
+
+.message-row.is-join .message-content {
+  color: var(--green-deep);
 }
 
 .message-content strong {
