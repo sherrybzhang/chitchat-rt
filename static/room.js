@@ -18,7 +18,7 @@ function createMessage(name, msg) {
     return;
   }
 
-  const isJoinMessage = msg === "has entered the room";
+  const isJoinMessage = msg === "has entered the room" || msg === "has left the room";
 
   const row = document.createElement("div");
   row.className = "message-row";
