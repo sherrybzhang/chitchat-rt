@@ -37,21 +37,7 @@ function createMessage(name, msg) {
   timestamp.className = "muted";
   timestamp.textContent = formatTimestamp();
 
-  const reaction = document.createElement("button");
-  reaction.type = "button";
-  reaction.className = "reaction-btn";
-  reaction.setAttribute("aria-label", "Toggle like");
-
-  const icon = document.createElement("i");
-  icon.className = "fa fa-thumbs-up";
-  reaction.appendChild(icon);
-
-  reaction.addEventListener("click", function () {
-    reaction.classList.toggle("is-active");
-  });
-
   meta.appendChild(timestamp);
-  meta.appendChild(reaction);
 
   row.appendChild(content);
   row.appendChild(meta);

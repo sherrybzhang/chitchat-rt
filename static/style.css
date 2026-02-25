@@ -288,7 +288,7 @@ button:active,
 
 .message-row {
   display: flex;
-  align-items: flex-start;
+  align-items: baseline;
   justify-content: space-between;
   gap: 12px;
   padding: 10px 12px;
@@ -308,7 +308,7 @@ button:active,
 
 .message-meta {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 8px;
   flex-shrink: 0;
 }
@@ -316,18 +316,6 @@ button:active,
 .muted {
   font-size: 0.74rem;
   color: var(--text-muted);
-}
-
-.reaction-btn {
-  color: var(--green-mid);
-  background: transparent;
-  border: 0;
-  padding: 0;
-  font-size: 1rem;
-}
-
-.reaction-btn.is-active {
-  color: var(--green-deep);
 }
 
 .inputs {
