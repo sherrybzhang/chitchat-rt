@@ -3,6 +3,10 @@ var socketio = io();
 const messages = document.getElementById("messages");
 const messageInput = document.getElementById("message");
 const sendButton = document.getElementById("send-btn");
+const openRoomModalButton = document.getElementById("open-room-modal");
+const closeRoomModalButton = document.getElementById("close-room-modal");
+const roomModal = document.getElementById("room-modal");
+const roomCodeInput = document.getElementById("modal-room-code");
 
 function formatTimestamp() {
   return new Date().toLocaleString([], {
@@ -76,6 +80,19 @@ function sendMessage() {
   messageInput.focus();
 }
 
+function toggleRoomModal(isOpen) {
+  if (!roomModal) {
+    return;
+  }
+
+  roomModal.hidden = !isOpen;
+  document.body.classList.toggle("modal-open", isOpen);
+
+  if (isOpen && roomCodeInput) {
+    roomCodeInput.focus();
+  }
+}
+
 if (messageInput) {
   messageInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -88,3 +105,25 @@ if (messageInput) {
 if (sendButton) {
   sendButton.addEventListener("click", sendMessage);
 }
+
+if (openRoomModalButton) {
+  openRoomModalButton.addEventListener("click", () => toggleRoomModal(true));
+}
+
+if (closeRoomModalButton) {
+  closeRoomModalButton.addEventListener("click", () => toggleRoomModal(false));
+}
+
+if (roomModal) {
+  roomModal.addEventListener("click", (event) => {
+    if (event.target === roomModal) {
+      toggleRoomModal(false);
+    }
+  });
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && roomModal && !roomModal.hidden) {
+    toggleRoomModal(false);
+  }
+});

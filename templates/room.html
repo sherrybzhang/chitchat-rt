@@ -3,9 +3,9 @@
 {% block content %}
 <section class="room-shell">
   <aside class="room-sidebar">
-    <form method="post" action="{{ url_for('new_room') }}">
-      <button class="text-btn">+ Join or create another chat</button>
-    </form>
+    <button type="button" class="text-btn" id="open-room-modal">
+      + Join or create another chat
+    </button>
 
     <h2>Channels</h2>
     <div class="channel-list">
@@ -42,6 +42,38 @@
     </div>
   </div>
 </section>
+
+<div class="room-modal-backdrop" id="room-modal" hidden>
+  <div class="room-modal" role="dialog" aria-modal="true" aria-labelledby="room-modal-title">
+    <div class="room-modal-header">
+      <h2 id="room-modal-title">Join or Create a Channel</h2>
+      <button type="button" class="modal-close-btn" id="close-room-modal" aria-label="Close">
+        &times;
+      </button>
+    </div>
+    <p class="support-text">
+      Enter a room code to join an existing channel, or create a new one in one click.
+    </p>
+
+    <form action="{{ url_for('chatroom_entry') }}" method="post" class="stack-form">
+      <label for="modal-room-code">Room code</label>
+      <div class="row-input">
+        <input
+          type="text"
+          id="modal-room-code"
+          name="code"
+          placeholder="e.g. project-alpha"
+          autocomplete="off"
+        />
+        <button type="submit" name="join" class="btn btn-primary">Join Channel</button>
+      </div>
+
+      <button type="submit" name="create" class="btn btn-secondary btn-full">
+        Create a New Channel
+      </button>
+    </form>
+  </div>
+</div>
 
 <script src="{{ url_for('static', filename='room.js') }}"></script>
 
