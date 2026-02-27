@@ -7,6 +7,12 @@ const openRoomModalButton = document.getElementById("open-room-modal");
 const closeRoomModalButton = document.getElementById("close-room-modal");
 const roomModal = document.getElementById("room-modal");
 const roomCodeInput = document.getElementById("modal-room-code");
+const roomModalForm = document.getElementById("room-modal-form");
+const roomModalError = document.getElementById("room-modal-error");
+
+if (roomModal && !roomModal.hidden) {
+  document.body.classList.add("modal-open");
+}
 
 function formatTimestamp() {
   return new Date().toLocaleString([], {
@@ -93,6 +99,15 @@ function toggleRoomModal(isOpen) {
   }
 }
 
+function setRoomModalError(message) {
+  if (!roomModalError) {
+    return;
+  }
+
+  roomModalError.textContent = message || "";
+  roomModalError.hidden = !message;
+}
+
 if (messageInput) {
   messageInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -107,7 +122,10 @@ if (sendButton) {
 }
 
 if (openRoomModalButton) {
-  openRoomModalButton.addEventListener("click", () => toggleRoomModal(true));
+  openRoomModalButton.addEventListener("click", () => {
+    setRoomModalError("");
+    toggleRoomModal(true);
+  });
 }
 
 if (closeRoomModalButton) {
@@ -127,3 +145,46 @@ document.addEventListener("keydown", (event) => {
     toggleRoomModal(false);
   }
 });
+
+if (roomModalForm) {
+  roomModalForm.addEventListener("submit", async (event) => {
+    const asyncEndpoint = roomModalForm.dataset.asyncEndpoint || roomModalForm.action;
+    if (!asyncEndpoint) {
+      return;
+    }
+
+    event.preventDefault();
+    setRoomModalError("");
+
+    const formData = new FormData(roomModalForm);
+    const submitter = event.submitter;
+    if (submitter && submitter.name) {
+      if (submitter.name === "join") {
+        formData.delete("create");
+      }
+      if (submitter.name === "create") {
+        formData.delete("join");
+      }
+      formData.set(submitter.name, submitter.value || "1");
+    }
+
+    try {
+      const response = await fetch(asyncEndpoint, {
+        method: "POST",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        body: formData,
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.ok || !payload.room) {
+        setRoomModalError(payload.error || "Unable to join that room.");
+        return;
+      }
+
+      window.location.href = payload.redirect_url || "/room";
+    } catch (_error) {
+      setRoomModalError("Unable to join that room.");
+    }
+  });
+}
