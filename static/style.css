@@ -30,6 +30,10 @@ body {
     linear-gradient(135deg, rgb(116, 157, 116), var(--green-base));
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 .content {
   min-height: 100vh;
   display: flex;
@@ -216,6 +220,55 @@ button:active,
   background: var(--green-soft);
 }
 
+.room-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(24, 40, 24, 0.36);
+  backdrop-filter: blur(2px);
+}
+
+.room-modal-backdrop[hidden] {
+  display: none;
+}
+
+.room-modal {
+  width: min(100%, 560px);
+  background: var(--surface-strong);
+  border: 1px solid rgba(53, 95, 53, 0.2);
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
+  padding: 22px;
+}
+
+.room-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.room-modal-header h2 {
+  font-size: clamp(1.24rem, 2.6vw, 1.6rem);
+}
+
+.room-modal .support-text {
+  margin: 8px 0 18px;
+}
+
+.modal-close-btn {
+  flex-shrink: 0;
+  padding: 3px 11px;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--green-deep);
+  background: var(--green-soft);
+}
+
 .room-sidebar h2 {
   font-size: 1.28rem;
 }
@@ -386,6 +439,10 @@ button:active,
 
   .inputs {
     flex-direction: column;
+  }
+
+  .room-modal {
+    padding: 20px 16px;
   }
 
   .inputs button,

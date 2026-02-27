@@ -1,6 +1,6 @@
 import logging
 
-from flask import Flask, render_template, request, session, redirect, url_for, make_response
+from flask import Flask, jsonify, make_response, redirect, render_template, request, session, url_for
 from flask.typing import ResponseReturnValue
 
 from app.services.room_services import RoomService
@@ -40,6 +40,29 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
             code = request.form.get("code")
             join = request.form.get("join", False)
             create = request.form.get("create", False)
+            origin = request.form.get("origin")
+            is_room_modal_request = origin == "room-modal"
+
+            def render_room_with_modal_error(error_message: str) -> ResponseReturnValue:
+                current_room = session.get("room")
+                room_context, room_context_error = room_service.build_room_view_context(
+                    name=name,
+                    room_code=current_room,
+                )
+                if room_context_error:
+                    return render_template("chatroom_entry.html", error=error_message, code=code, name=name)
+
+                return (
+                    render_template(
+                        "room.html",
+                        **room_context,
+                        modal_open=True,
+                        modal_error=error_message,
+                        modal_code=code,
+                    ),
+                    400,
+                )
+
             room, entry_error = room_service.resolve_room_entry(
                 name=name,
                 code=code,
@@ -47,11 +70,15 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
                 wants_create=create != False,
             )
             if entry_error:
+                if is_room_modal_request:
+                    return render_room_with_modal_error(entry_error)
                 return render_template("chatroom_entry.html", error=entry_error, code=code, name=name)
 
             session["room"] = room
             room_context, room_error = room_service.build_room_view_context(name=name, room_code=room)
             if room_error:
+                if is_room_modal_request:
+                    return render_room_with_modal_error(room_error)
                 return render_template("chatroom_entry.html", error=room_error, code=code, name=name)
 
             return render_template("room.html", **room_context)
@@ -84,6 +111,65 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
         # Set the cookie
         response = make_response(redirect(url_for("room")))
         response.set_cookie(_ROOM_CODE_COOKIE, room_code)
+        return response
+
+    @app.route("/room-modal-entry", methods=["POST"])
+    def room_modal_entry() -> ResponseReturnValue:
+        name = session.get("name")
+        code = request.form.get("code")
+        join = request.form.get("join", False)
+        create = request.form.get("create", False)
+        is_async_request = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        requested_room = (code or "").strip()
+        current_room = session.get("room")
+
+        def render_room_modal_error(error_message: str) -> ResponseReturnValue:
+            if is_async_request:
+                return jsonify({"ok": False, "error": error_message}), 400
+
+            current_room = session.get("room")
+            room_context, room_context_error = room_service.build_room_view_context(
+                name=name,
+                room_code=current_room,
+            )
+            if room_context_error:
+                return render_template("chatroom_entry.html", error=error_message, code=code, name=name), 400
+
+            return (
+                render_template(
+                    "room.html",
+                    **room_context,
+                    modal_open=True,
+                    modal_error=error_message,
+                    modal_code=code,
+                ),
+                400,
+            )
+
+        if requested_room and current_room and requested_room == current_room:
+            return render_room_modal_error("You are already in this room")
+
+        room, entry_error = room_service.resolve_room_entry(
+            name=name,
+            code=code,
+            wants_join=join != False,
+            wants_create=create != False,
+        )
+        if entry_error:
+            return render_room_modal_error(entry_error)
+
+        session["room"] = room
+        room_context, room_error = room_service.build_room_view_context(name=name, room_code=room)
+        if room_error:
+            return render_room_modal_error(room_error)
+
+        if is_async_request:
+            response = make_response(jsonify({"ok": True, "room": room, "redirect_url": url_for("room")}))
+            response.set_cookie(_ROOM_CODE_COOKIE, room)
+            return response
+
+        response = make_response(redirect(url_for("room")))
+        response.set_cookie(_ROOM_CODE_COOKIE, room)
         return response
 
     @app.route("/new-room", methods=["POST", "GET"])

@@ -3,9 +3,9 @@
 {% block content %}
 <section class="room-shell">
   <aside class="room-sidebar">
-    <form method="post" action="{{ url_for('new_room') }}">
-      <button class="text-btn">+ Join or create another chat</button>
-    </form>
+    <button type="button" class="text-btn" id="open-room-modal">
+      + Join or create another chat
+    </button>
 
     <h2>Channels</h2>
     <div class="channel-list">
@@ -42,6 +42,49 @@
     </div>
   </div>
 </section>
+
+<div class="room-modal-backdrop" id="room-modal" {% if not modal_open %}hidden{% endif %}>
+  <div class="room-modal" role="dialog" aria-modal="true" aria-labelledby="room-modal-title">
+    <div class="room-modal-header">
+      <h2 id="room-modal-title">Join or Create a Channel</h2>
+      <button type="button" class="modal-close-btn" id="close-room-modal" aria-label="Close">
+        &times;
+      </button>
+    </div>
+    <p class="support-text">
+      Enter a room code to join an existing channel, or create a new one in one click.
+    </p>
+
+    <form
+      action="{{ url_for('room_modal_entry') }}"
+      method="post"
+      class="stack-form"
+      id="room-modal-form"
+      data-async-endpoint="{{ url_for('room_modal_entry') }}"
+    >
+      <label for="modal-room-code">Room code</label>
+      <div class="row-input">
+        <input
+          type="text"
+          id="modal-room-code"
+          name="code"
+          value="{{ modal_code|default('', true) }}"
+          placeholder="e.g. project-alpha"
+          autocomplete="off"
+        />
+        <button type="submit" name="join" value="1" class="btn btn-primary">Join Channel</button>
+      </div>
+
+      <button type="submit" name="create" value="1" class="btn btn-secondary btn-full">
+        Create a New Channel
+      </button>
+
+      <p class="form-error" id="room-modal-error" {% if not modal_error %}hidden{% endif %}>
+        {{ modal_error|default('', true) }}
+      </p>
+    </form>
+  </div>
+</div>
 
 <script src="{{ url_for('static', filename='room.js') }}"></script>
 
