@@ -71,16 +71,12 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
         if request.method == "POST":
             name = session.get("name")
             code = request.form.get("code")
-            join = request.form.get("join", False)
-            create = request.form.get("create", False)
             origin = request.form.get("origin")
             is_room_modal_request = origin == "room-modal"
 
             room, entry_error = room_service.resolve_room_entry(
                 name=name,
                 code=code,
-                wants_join=join != False,
-                wants_create=create != False,
             )
             if entry_error:
                 if is_room_modal_request:
@@ -140,15 +136,13 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
     def room_modal_entry() -> ResponseReturnValue:
         name = session.get("name")
         code = request.form.get("code")
-        join = request.form.get("join", False)
-        create = request.form.get("create", False)
         is_async_request = request.headers.get("X-Requested-With") == "XMLHttpRequest"
         requested_room = (code or "").strip()
         current_room = session.get("room")
 
         if requested_room and current_room and requested_room == current_room:
             return render_room_modal_error(
-                error_message="You are already in this room",
+                error_message="You are already in this channel",
                 name=name,
                 code=code,
                 current_room=current_room,
@@ -159,8 +153,6 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
         room, entry_error = room_service.resolve_room_entry(
             name=name,
             code=code,
-            wants_join=join != False,
-            wants_create=create != False,
         )
         if entry_error:
             return render_room_modal_error(

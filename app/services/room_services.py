@@ -1,7 +1,6 @@
 from app.storage.room_store import RoomMessage, RoomRecord, RoomStore
 from app.services.room_validation import (
-    validate_create_request,
-    validate_join_request,
+    validate_room_entry_code,
     validate_room_access,
 )
 
@@ -14,24 +13,15 @@ class RoomService:
         self,
         name: str | None,
         code: str | None,
-        wants_join: bool,
-        wants_create: bool,
     ) -> tuple[str | None, str | None]:
         room_code = (code or "").strip()
 
-        if wants_join:
-            join_error = validate_join_request(room_code, self.room_exists)
-            if join_error:
-                return None, join_error
-
-        if wants_create:
-            create_error = validate_create_request(room_code, self.room_exists)
-            if create_error:
-                return None, create_error
-            self.create_room(room_code)
+        code_error = validate_room_entry_code(room_code)
+        if code_error:
+            return None, code_error
 
         if not self.room_exists(room_code):
-            return None, validate_join_request(room_code, self.room_exists)
+            self.create_room(room_code)
 
         room_access_error = validate_room_access(room_code, name, self.room_exists)
         if room_access_error:
