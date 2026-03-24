@@ -157,16 +157,6 @@ if (roomModalForm) {
     setRoomModalError("");
 
     const formData = new FormData(roomModalForm);
-    const submitter = event.submitter;
-    if (submitter && submitter.name) {
-      if (submitter.name === "join") {
-        formData.delete("create");
-      }
-      if (submitter.name === "create") {
-        formData.delete("join");
-      }
-      formData.set(submitter.name, submitter.value || "1");
-    }
 
     try {
       const response = await fetch(asyncEndpoint, {
@@ -178,13 +168,13 @@ if (roomModalForm) {
       });
       const payload = await response.json();
       if (!response.ok || !payload.ok || !payload.room) {
-        setRoomModalError(payload.error || "Unable to join that room.");
+        setRoomModalError(payload.error || "Unable to enter that channel.");
         return;
       }
 
       window.location.href = payload.redirect_url || "/room";
     } catch (_error) {
-      setRoomModalError("Unable to join that room.");
+      setRoomModalError("Unable to enter that channel.");
     }
   });
 }
