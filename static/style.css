@@ -6,8 +6,9 @@
   --surface: rgba(255, 255, 255, 0.88);
   --surface-strong: rgba(255, 255, 255, 0.97);
   --text-main: rgb(24, 40, 24);
-  --text-muted: rgb(79, 98, 79);
+  --text-muted: rgb(58, 78, 58);
   --error: rgb(162, 44, 44);
+  --focus-ring: rgb(19, 70, 150);
   --shadow-lg: 0 18px 42px rgba(26, 44, 26, 0.16);
   --shadow-sm: 0 4px 14px rgba(26, 44, 26, 0.1);
   --radius-xl: 26px;
@@ -23,6 +24,7 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: "DM Sans", sans-serif;
+  line-height: 1.5;
   color: var(--text-main);
   background:
     radial-gradient(circle at 8% 10%, rgba(255, 255, 255, 0.62) 0, transparent 42%),
@@ -40,6 +42,38 @@ body.modal-open {
   justify-content: center;
   align-items: center;
   padding: 32px 20px;
+}
+
+.skip-link,
+.sr-only {
+  position: absolute;
+}
+
+.skip-link {
+  left: 16px;
+  top: 16px;
+  z-index: 50;
+  transform: translateY(-200%);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  color: white;
+  background: var(--green-deep);
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.sr-only {
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 h1,
@@ -129,10 +163,10 @@ input {
   border: 1px solid rgba(53, 95, 53, 0.22);
   border-radius: var(--radius-sm);
   padding: 11px 13px;
+  font: inherit;
   font-size: 1rem;
   color: var(--text-main);
   background: var(--surface-strong);
-  outline: none;
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
@@ -140,7 +174,7 @@ input::placeholder {
   color: rgb(126, 146, 126);
 }
 
-input:focus {
+input:focus-visible {
   border-color: rgba(53, 95, 53, 0.58);
   box-shadow: 0 0 0 3px rgba(135, 172, 135, 0.22);
 }
@@ -150,6 +184,7 @@ button,
   border: 0;
   border-radius: var(--radius-sm);
   padding: 11px 16px;
+  font: inherit;
   font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
@@ -168,7 +203,7 @@ button:active,
 
 .btn-primary {
   color: white;
-  background: linear-gradient(135deg, var(--green-deep), var(--green-mid));
+  background: var(--green-deep);
   box-shadow: var(--shadow-sm);
 }
 
@@ -181,9 +216,19 @@ button:active,
   width: 100%;
 }
 
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+input:focus-visible,
+.messages:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
 .form-error {
   margin: 4px 0 0;
   font-size: 0.9rem;
+  font-weight: 600;
   color: var(--error);
 }
 
@@ -356,6 +401,7 @@ button:active,
 }
 
 .message-content {
+  margin: 0;
   line-height: 1.45;
   overflow-wrap: anywhere;
 }
@@ -384,8 +430,26 @@ button:active,
   border-top: 1px solid rgba(53, 95, 53, 0.15);
   padding: 14px;
   display: flex;
+  align-items: center;
   gap: 10px;
   background: rgba(255, 255, 255, 0.78);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  button:hover,
+  .btn:hover,
+  .channel-pill:hover {
+    transform: none;
+  }
 }
 
 @media (max-width: 980px) {

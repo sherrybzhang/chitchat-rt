@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ChitChat</title>
+    <title>{% block title %}ChitChat{% endblock %}</title>
 
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg', v='5') }}" />
 
@@ -33,6 +33,9 @@
     {% block head %}{% endblock %}
   </head>
   <body>
-    <div class="content">{% block content %}{% endblock %}</div>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <main id="main-content" class="content" tabindex="-1">
+      {% block content %}{% endblock %}
+    </main>
   </body>
 </html>
