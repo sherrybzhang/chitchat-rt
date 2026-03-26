@@ -2,6 +2,8 @@
 
 ChitChat RT is a real-time chat application that lets users enter a display name, join or create channels by code, and exchange messages instantly over WebSockets.
 
+***NOTE**: Originally built from scratch in 2023. In 2026, I used AI-assisted development tools to help refactor, modernize, and improve parts of the codebase, including backend fixes and a more polished UI. The architecture, product decisions, and final implementation choices remained mine.*
+
 ***NOTE**: This project currently uses in-memory storage for channels and messages. Restarting the server clears all state, and channels are removed when the last member leaves.*
 
 ## Features
@@ -62,5 +64,5 @@ http://localhost:8080
 The project includes unit tests for room entry behavior, room validation, and Socket.IO session/message validation.
 
 ```bash
-python3 -m unittest discover tests
+pytest
 ```
