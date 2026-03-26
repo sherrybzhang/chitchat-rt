@@ -1,42 +1,66 @@
 # ChitChat RT
 
-ChitChat RT is a lightweight online messaging service built with Flask and Socket.IO. It provides simple room-based chat with live updates over WebSockets and a minimal UI.
+ChitChat RT is a real-time chat application that lets users enter a display name, join or create channels by code, and exchange messages instantly over WebSockets.
+
+***NOTE**: This project currently uses in-memory storage for channels and messages. Restarting the server clears all state, and channels are removed when the last member leaves.*
 
 ## Features
-- Create or join chat rooms by code
-- Real-time messaging with Socket.IO
-- In-memory room/member/message tracking
-- Simple web UI with message history for the active room
+- Display-name entry flow before joining chat
+- Create or join a channel by entering a channel code
+- Real-time messaging with Flask-SocketIO
+- Active channel list with quick switching from the sidebar
+- In-room modal for entering another channel without leaving the chat view
+- Message and session validation for empty names, missing channel codes, and invalid Socket.IO payloads
 
 ## Technologies
-- **Languages**: Python, JavaScript, HTML, CSS
-- **Frameworks/Libraries**: Flask, Flask-SocketIO, Socket.IO (client)
-- **Templating**: Jinja
+- **Languages:** Python, JavaScript, HTML, CSS
+- **Frameworks/Libraries:** Flask, Flask-SocketIO, python-dotenv
+- **Transport:** Socket.IO
+- **Storage:** In-memory room store
 
 ## Setup
-1) Create and activate a virtual environment
-2) Install dependencies
-3) Run the server
-
-Example:
-
+1) Create and activate a virtual environment.
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
+```
+2) Install dependencies.
+```bash
 pip install -r requirements.txt
+```
+3) Configure environment variables.
+```bash
 cp .env.example .env
-python application.py
+```
+Set `SECRET_KEY` in `.env` before starting the app.
+
+4) Run the app.
+```bash
+python3 application.py
+```
+5) Open the app in your browser.
+```text
+http://localhost:8080
 ```
 
-Then open `http://localhost:8080` in your browser.
+## Usage
+1. Enter a display name on the landing page.
+2. Enter a channel code to join an existing channel or create a new one.
+3. Send messages from the room view and watch updates appear in real time.
+4. Use the sidebar or the "Enter another channel" modal to switch into a different channel.
 
-## Notes and Limitations (Current)
-- Rooms and messages are stored in memory; restarting the server clears all state.
-- No persistence, authentication, or rate limiting yet.
-- Room codes are user-provided and not auto-generated.
+## Routes
+`GET /` shows the landing page for entering a display name.
 
-## Roadmap (Planned)
-- Update architecture and dependency set
-- Add persistence and proper room management
-- Improve validation, security, and error handling
-- Refresh UI and documentation
+`GET, POST /chatroom-entry` lets a user enter a channel code and join or create a channel.
+
+`GET /room` loads the active channel for the current session.
+
+`GET /room/<room_code>` opens a specific channel URL and stores that channel in the current session.
+
+## Tests
+The project includes unit tests for room entry behavior, room validation, and Socket.IO session/message validation.
+
+```bash
+python3 -m unittest discover tests
+```
