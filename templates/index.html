@@ -13,7 +13,7 @@
       chatting instantly.
     </p>
 
-    <form method="post" action="{{ url_for('chat') }}" class="stack-form">
+    <form method="post" action="{{ url_for('chat') }}" class="stack-form" data-validate-form>
       <label for="name">Display Name</label>
       <div class="row-input">
         <input
@@ -24,14 +24,16 @@
           placeholder="e.g. Skyler"
           autocomplete="nickname"
           required
+          data-error-id="name-error"
           aria-required="true"
-          {% if error %}aria-invalid="true" aria-describedby="name-error"{% endif %}
+          aria-describedby="name-error"
+          {% if error %}aria-invalid="true"{% endif %}
         />
         <button type="submit" name="join" class="btn btn-primary">Enter Chat</button>
       </div>
-      {% if error %}
-      <p class="form-error" id="name-error" role="alert">{{ error }}</p>
-      {% endif %}
+      <p class="form-error" id="name-error" role="alert" {% if not error %}hidden{% endif %}>
+        {{ error|default('', true) }}
+      </p>
     </form>
   </div>
 </section>

@@ -8,7 +8,7 @@
   --text-main: rgb(24, 40, 24);
   --text-muted: rgb(58, 78, 58);
   --error: rgb(162, 44, 44);
-  --focus-ring: rgb(19, 70, 150);
+  --focus-ring: rgb(53, 95, 53);
   --shadow-lg: 0 18px 42px rgba(26, 44, 26, 0.16);
   --shadow-sm: 0 4px 14px rgba(26, 44, 26, 0.1);
   --radius-xl: 26px;
@@ -175,6 +175,7 @@ input::placeholder {
 }
 
 input:focus-visible {
+  outline: none;
   border-color: rgba(53, 95, 53, 0.58);
   box-shadow: 0 0 0 3px rgba(135, 172, 135, 0.22);
 }
@@ -219,17 +220,33 @@ button:active,
 a:focus-visible,
 button:focus-visible,
 .btn:focus-visible,
-input:focus-visible,
 .messages:focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: 3px;
 }
 
 .form-error {
-  margin: 4px 0 0;
+  margin: 6px 0 0;
+  padding: 10px 12px;
   font-size: 0.9rem;
   font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(162, 44, 44, 0.2);
+  background: rgba(162, 44, 44, 0.08);
   color: var(--error);
+}
+
+.form-error[hidden] {
+  display: none;
+}
+
+input[aria-invalid="true"] {
+  border-color: rgba(162, 44, 44, 0.58);
+}
+
+input[aria-invalid="true"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(162, 44, 44, 0.16);
 }
 
 
