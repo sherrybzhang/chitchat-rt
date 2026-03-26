@@ -1,10 +1,12 @@
 {% extends 'base.html' %}
 
+{% block title %}Welcome | ChitChat{% endblock %}
+
 {% block content %}
-<section class="page page-landing">
+<section class="page page-landing" aria-labelledby="landing-title">
   <div class="card card-landing">
     <p class="chip">Realtime Messaging</p>
-    <h1>Welcome to ChitChat</h1>
+    <h1 id="landing-title">Welcome to ChitChat</h1>
     <p class="support-text">
       ChitChat is a simple online messaging service that lets you connect with
       fellow ChitChatters around the world. Enter a display name and start
@@ -12,7 +14,7 @@
     </p>
 
     <form method="post" action="{{ url_for('chat') }}" class="stack-form">
-      <label for="name">Display name</label>
+      <label for="name">Display Name</label>
       <div class="row-input">
         <input
           type="text"
@@ -21,11 +23,14 @@
           value="{{ name }}"
           placeholder="e.g. Skyler"
           autocomplete="nickname"
+          required
+          aria-required="true"
+          {% if error %}aria-invalid="true" aria-describedby="name-error"{% endif %}
         />
-        <input type="submit" name="join" class="btn btn-primary" value="Enter Chat" />
+        <button type="submit" name="join" class="btn btn-primary">Enter Chat</button>
       </div>
       {% if error %}
-      <p class="form-error">{{ error }}</p>
+      <p class="form-error" id="name-error" role="alert">{{ error }}</p>
       {% endif %}
     </form>
   </div>

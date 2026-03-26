@@ -1,16 +1,18 @@
 {% extends 'base.html' %}
 
+{% block title %}Choose a Channel | ChitChat{% endblock %}
+
 {% block content %}
-<section class="page page-entry">
+<section class="page page-entry" aria-labelledby="channel-entry-title">
   <div class="card card-entry">
     <p class="chip">Channel Selection</p>
-    <h1>Enter a Channel</h1>
+    <h1 id="channel-entry-title">Enter a Channel</h1>
     <p class="support-text">
       Enter a channel code. If it exists, you will join it. If not, we will create it.
     </p>
 
     <form action="{{ url_for('chatroom_entry') }}" method="post" class="stack-form">
-      <label for="code">Channel code</label>
+      <label for="code">Channel Code</label>
       <div class="row-input">
         <input
           type="text"
@@ -19,12 +21,16 @@
           value="{{ code }}"
           placeholder="e.g. project-alpha"
           autocomplete="off"
+          required
+          aria-required="true"
+          autocapitalize="off"
+          {% if error %}aria-invalid="true" aria-describedby="code-error"{% endif %}
         />
         <button type="submit" class="btn btn-primary">Enter Channel</button>
       </div>
 
       {% if error %}
-      <p class="form-error">{{ error }}</p>
+      <p class="form-error" id="code-error" role="alert">{{ error }}</p>
       {% endif %}
     </form>
   </div>

@@ -1,57 +1,94 @@
 {% extends 'base.html' %}
 
+{% block title %}{{ code }} | ChitChat{% endblock %}
+
 {% block content %}
 <section class="room-shell">
-  <aside class="room-sidebar">
-    <button type="button" class="text-btn" id="open-room-modal">
-      + Enter another channel
+  <aside class="room-sidebar" aria-labelledby="channels-heading">
+    <button
+      type="button"
+      class="text-btn"
+      id="open-room-modal"
+      aria-haspopup="dialog"
+      aria-controls="room-modal"
+      aria-expanded="{% if modal_open %}true{% else %}false{% endif %}"
+    >
+      + Enter Another Channel
     </button>
 
-    <h2>Channels</h2>
-    <div class="channel-list">
+    <h2 id="channels-heading">Channels</h2>
+    <nav class="channel-list" aria-label="Channel List">
       {% for room in rooms %}
       <a
         href="{{ url_for('view_room', room_code=room) }}"
         class="channel-pill {% if room == code %}is-active{% endif %}"
+        {% if room == code %}aria-current="page"{% endif %}
       >
         {{ room }}
       </a>
       {% endfor %}
-    </div>
+    </nav>
   </aside>
 
-  <div class="chat-panel">
+  <section class="chat-panel" aria-labelledby="room-title">
     <header class="chat-header">
-      <p class="eyebrow">Active channel</p>
-      <h1>{{ code }}</h1>
+      <p class="eyebrow">Active Channel</p>
+      <h1 id="room-title">{{ code }}</h1>
     </header>
 
-    <div class="messages" id="messages" aria-live="polite"></div>
+    <p class="sr-only" id="messages-help">
+      Message history. New messages are announced automatically.
+    </p>
+    <div
+      class="messages"
+      id="messages"
+      role="log"
+      aria-live="off"
+      aria-relevant="additions text"
+      aria-atomic="false"
+      aria-describedby="messages-help"
+      tabindex="0"
+    ></div>
+    <div class="sr-only" id="message-status" aria-live="polite" aria-atomic="true"></div>
 
     <div class="inputs">
+      <label for="message" class="sr-only">Write a Message</label>
       <input
         type="text"
-        placeholder="Write a message"
+        placeholder="Write a Message"
         name="message"
         id="message"
         autocomplete="off"
+        aria-describedby="message-compose-help"
       />
+      <p class="sr-only" id="message-compose-help">Press Enter or use the Send button to post your message.</p>
       <button type="button" name="send" id="send-btn" class="btn btn-primary">
         Send
       </button>
     </div>
-  </div>
+  </section>
 </section>
 
 <div class="room-modal-backdrop" id="room-modal" {% if not modal_open %}hidden{% endif %}>
-  <div class="room-modal" role="dialog" aria-modal="true" aria-labelledby="room-modal-title">
+  <div
+    class="room-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="room-modal-title"
+    aria-describedby="room-modal-description"
+  >
     <div class="room-modal-header">
       <h2 id="room-modal-title">Enter a Channel</h2>
-      <button type="button" class="modal-close-btn" id="close-room-modal" aria-label="Close">
+      <button
+        type="button"
+        class="modal-close-btn"
+        id="close-room-modal"
+        aria-label="Close Channel Dialog"
+      >
         &times;
       </button>
     </div>
-    <p class="support-text">
+    <p class="support-text" id="room-modal-description">
       Enter a channel code. If it exists, you will join it. If not, we will create it.
     </p>
 
@@ -62,7 +99,7 @@
       id="room-modal-form"
       data-async-endpoint="{{ url_for('room_modal_entry') }}"
     >
-      <label for="modal-room-code">Channel code</label>
+      <label for="modal-room-code">Channel Code</label>
       <div class="row-input">
         <input
           type="text"
@@ -71,11 +108,20 @@
           value="{{ modal_code|default('', true) }}"
           placeholder="e.g. project-alpha"
           autocomplete="off"
+          required
+          aria-required="true"
+          autocapitalize="off"
+          {% if modal_error %}aria-invalid="true" aria-describedby="room-modal-error"{% endif %}
         />
         <button type="submit" class="btn btn-primary">Enter Channel</button>
       </div>
 
-      <p class="form-error" id="room-modal-error" {% if not modal_error %}hidden{% endif %}>
+      <p
+        class="form-error"
+        id="room-modal-error"
+        role="alert"
+        {% if not modal_error %}hidden{% endif %}
+      >
         {{ modal_error|default('', true) }}
       </p>
     </form>
@@ -86,7 +132,7 @@
 
 {% for msg in messages %}
 <script type="text/javascript">
-  createMessage({{ msg.name|tojson }}, {{ msg.message|tojson }});
+  createMessage({{ msg.name|tojson }}, {{ msg.message|tojson }}, { announce: false });
 </script>
 {% endfor %}
 {% endblock %}

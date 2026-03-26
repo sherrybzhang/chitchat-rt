@@ -1,21 +1,22 @@
-var socketio = io();
+const socketio = io();
 
 const messages = document.getElementById("messages");
 const messageInput = document.getElementById("message");
+const messageStatus = document.getElementById("message-status");
 const sendButton = document.getElementById("send-btn");
 const openRoomModalButton = document.getElementById("open-room-modal");
 const closeRoomModalButton = document.getElementById("close-room-modal");
 const roomModal = document.getElementById("room-modal");
+const roomShell = document.querySelector(".room-shell");
 const roomCodeInput = document.getElementById("modal-room-code");
 const roomModalForm = document.getElementById("room-modal-form");
 const roomModalError = document.getElementById("room-modal-error");
+let previousFocusedElement = null;
+const focusableSelector =
+  'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-if (roomModal && !roomModal.hidden) {
-  document.body.classList.add("modal-open");
-}
-
-function formatTimestamp() {
-  return new Date().toLocaleString([], {
+function formatTimestamp(date) {
+  return date.toLocaleString([], {
     hour: "2-digit",
     minute: "2-digit",
     month: "short",
@@ -23,20 +24,44 @@ function formatTimestamp() {
   });
 }
 
-function createMessage(name, msg) {
+function announceStatus(message) {
+  if (!messageStatus) {
+    return;
+  }
+
+  messageStatus.textContent = "";
+  window.requestAnimationFrame(() => {
+    messageStatus.textContent = message;
+  });
+}
+
+function getModalFocusableElements() {
+  if (!roomModal) {
+    return [];
+  }
+
+  return Array.from(roomModal.querySelectorAll(focusableSelector)).filter(
+    (element) => !element.hasAttribute("hidden") && !element.closest("[hidden]"),
+  );
+}
+
+function createMessage(name, msg, options = {}) {
   if (!messages) {
     return;
   }
 
+  const { announce = true } = options;
   const isJoinMessage = msg === "has entered the room" || msg === "has left the room";
+  const createdAt = new Date();
+  const timestampLabel = formatTimestamp(createdAt);
 
-  const row = document.createElement("div");
+  const row = document.createElement("article");
   row.className = "message-row";
   if (isJoinMessage) {
     row.classList.add("is-join");
   }
 
-  const content = document.createElement("span");
+  const content = document.createElement("p");
   content.className = "message-content";
 
   if (isJoinMessage) {
@@ -54,9 +79,10 @@ function createMessage(name, msg) {
   const meta = document.createElement("div");
   meta.className = "message-meta";
 
-  const timestamp = document.createElement("span");
+  const timestamp = document.createElement("time");
   timestamp.className = "muted";
-  timestamp.textContent = formatTimestamp();
+  timestamp.dateTime = createdAt.toISOString();
+  timestamp.textContent = timestampLabel;
 
   meta.appendChild(timestamp);
 
@@ -65,6 +91,10 @@ function createMessage(name, msg) {
 
   messages.appendChild(row);
   messages.scrollTop = messages.scrollHeight;
+
+  if (announce) {
+    announceStatus(isJoinMessage ? `${name} ${msg}` : `${name} says ${msg}`);
+  }
 }
 
 socketio.on("message", (data) => {
@@ -91,11 +121,33 @@ function toggleRoomModal(isOpen) {
     return;
   }
 
+  if (isOpen) {
+    previousFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  }
+
   roomModal.hidden = !isOpen;
   document.body.classList.toggle("modal-open", isOpen);
+  if (openRoomModalButton) {
+    openRoomModalButton.setAttribute("aria-expanded", String(isOpen));
+  }
+  if (roomShell) {
+    if (isOpen) {
+      roomShell.setAttribute("aria-hidden", "true");
+      roomShell.setAttribute("inert", "");
+    } else {
+      roomShell.removeAttribute("aria-hidden");
+      roomShell.removeAttribute("inert");
+    }
+  }
 
-  if (isOpen && roomCodeInput) {
-    roomCodeInput.focus();
+  if (isOpen) {
+    const focusableElements = getModalFocusableElements();
+    const nextFocusTarget = focusableElements[0] || roomCodeInput || closeRoomModalButton;
+    if (nextFocusTarget) {
+      nextFocusTarget.focus();
+    }
+  } else if (previousFocusedElement && typeof previousFocusedElement.focus === "function") {
+    previousFocusedElement.focus();
   }
 }
 
@@ -106,6 +158,53 @@ function setRoomModalError(message) {
 
   roomModalError.textContent = message || "";
   roomModalError.hidden = !message;
+  if (roomCodeInput) {
+    if (message) {
+      roomCodeInput.setAttribute("aria-invalid", "true");
+      roomCodeInput.setAttribute("aria-describedby", "room-modal-error");
+    } else {
+      roomCodeInput.removeAttribute("aria-invalid");
+      roomCodeInput.removeAttribute("aria-describedby");
+    }
+  }
+}
+
+function handleModalKeydown(event) {
+  if (!roomModal || roomModal.hidden) {
+    return;
+  }
+
+  if (event.key === "Escape") {
+    event.preventDefault();
+    toggleRoomModal(false);
+    return;
+  }
+
+  if (event.key !== "Tab") {
+    return;
+  }
+
+  const focusableElements = getModalFocusableElements();
+  if (!focusableElements.length) {
+    return;
+  }
+
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+
+  if (!roomModal.contains(document.activeElement)) {
+    event.preventDefault();
+    firstElement.focus();
+    return;
+  }
+
+  if (event.shiftKey && document.activeElement === firstElement) {
+    event.preventDefault();
+    lastElement.focus();
+  } else if (!event.shiftKey && document.activeElement === lastElement) {
+    event.preventDefault();
+    firstElement.focus();
+  }
 }
 
 if (messageInput) {
@@ -140,11 +239,7 @@ if (roomModal) {
   });
 }
 
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && roomModal && !roomModal.hidden) {
-    toggleRoomModal(false);
-  }
-});
+document.addEventListener("keydown", handleModalKeydown);
 
 if (roomModalForm) {
   roomModalForm.addEventListener("submit", async (event) => {
@@ -169,12 +264,22 @@ if (roomModalForm) {
       const payload = await response.json();
       if (!response.ok || !payload.ok || !payload.room) {
         setRoomModalError(payload.error || "Unable to enter that channel.");
+        if (roomCodeInput) {
+          roomCodeInput.focus();
+        }
         return;
       }
 
       window.location.href = payload.redirect_url || "/room";
     } catch (_error) {
       setRoomModalError("Unable to enter that channel.");
+      if (roomCodeInput) {
+        roomCodeInput.focus();
+      }
     }
   });
+}
+
+if (roomModal && !roomModal.hidden) {
+  toggleRoomModal(true);
 }
