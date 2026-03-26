@@ -1,18 +1,39 @@
+from __future__ import annotations
+
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
-from flask import Flask
-from flask_socketio import SocketIO
-from dotenv import load_dotenv
+if TYPE_CHECKING:
+    from flask import Flask
+    from app.storage.room_store import RoomStore
 
-from app.services.room_services import RoomService
-from app.storage.memory_store import RoomMemoryStore
-from app.storage.room_store import RoomStore
 
-socketio = SocketIO()
+class _SocketIOProxy:
+    def __init__(self) -> None:
+        self._socketio: Any | None = None
+
+    def _get_socketio(self) -> Any:
+        if self._socketio is None:
+            from flask_socketio import SocketIO
+
+            self._socketio = SocketIO()
+        return self._socketio
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._get_socketio(), name)
+
+
+socketio = _SocketIOProxy()
 
 
 def create_app(room_store: RoomStore | None = None) -> Flask:
+    from dotenv import load_dotenv
+    from flask import Flask
+
+    from app.services.room_services import RoomService
+    from app.storage.memory_store import RoomMemoryStore
+
     repo_root = Path(__file__).resolve().parent.parent
     load_dotenv(repo_root / ".env")
     app = Flask(
