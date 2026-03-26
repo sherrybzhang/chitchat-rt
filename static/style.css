@@ -41,7 +41,32 @@ body.modal-open {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 32px 20px;
+  padding: 60px 20px 32px;
+}
+
+.site-brand {
+  position: fixed;
+  top: 22px;
+  left: 24px;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--green-deep);
+  text-decoration: none;
+}
+
+.site-brand-mark {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.site-brand-text {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.28rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 .skip-link,
@@ -490,8 +515,23 @@ input[aria-invalid="true"]:focus-visible {
 }
 
 @media (max-width: 760px) {
+  .site-brand {
+    top: 16px;
+    left: 16px;
+    gap: 10px;
+  }
+
+  .site-brand-mark {
+    width: 32px;
+    height: 32px;
+  }
+
+  .site-brand-text {
+    font-size: 1.14rem;
+  }
+
   .content {
-    padding: 18px 12px;
+    padding: 76px 12px 18px;
   }
 
   .card {
