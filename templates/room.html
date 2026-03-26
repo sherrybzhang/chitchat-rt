@@ -97,6 +97,7 @@
       method="post"
       class="stack-form"
       id="room-modal-form"
+      data-validate-form
       data-async-endpoint="{{ url_for('room_modal_entry') }}"
     >
       <label for="modal-room-code">Channel Code</label>
@@ -109,9 +110,11 @@
           placeholder="e.g. project-alpha"
           autocomplete="off"
           required
+          data-error-id="room-modal-error"
           aria-required="true"
           autocapitalize="off"
-          {% if modal_error %}aria-invalid="true" aria-describedby="room-modal-error"{% endif %}
+          aria-describedby="room-modal-error"
+          {% if modal_error %}aria-invalid="true"{% endif %}
         />
         <button type="submit" class="btn btn-primary">Enter Channel</button>
       </div>

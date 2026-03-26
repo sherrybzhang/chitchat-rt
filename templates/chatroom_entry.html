@@ -11,7 +11,7 @@
       Enter a channel code. If it exists, you will join it. If not, we will create it.
     </p>
 
-    <form action="{{ url_for('chatroom_entry') }}" method="post" class="stack-form">
+    <form action="{{ url_for('chatroom_entry') }}" method="post" class="stack-form" data-validate-form>
       <label for="code">Channel Code</label>
       <div class="row-input">
         <input
@@ -22,16 +22,18 @@
           placeholder="e.g. project-alpha"
           autocomplete="off"
           required
+          data-error-id="code-error"
           aria-required="true"
           autocapitalize="off"
-          {% if error %}aria-invalid="true" aria-describedby="code-error"{% endif %}
+          aria-describedby="code-error"
+          {% if error %}aria-invalid="true"{% endif %}
         />
         <button type="submit" class="btn btn-primary">Enter Channel</button>
       </div>
 
-      {% if error %}
-      <p class="form-error" id="code-error" role="alert">{{ error }}</p>
-      {% endif %}
+      <p class="form-error" id="code-error" role="alert" {% if not error %}hidden{% endif %}>
+        {{ error|default('', true) }}
+      </p>
     </form>
   </div>
 </section>
