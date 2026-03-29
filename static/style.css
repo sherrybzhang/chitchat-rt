@@ -283,7 +283,8 @@ input[aria-invalid="true"]:focus-visible {
 
 .room-shell {
   width: min(1160px, 100%);
-  min-height: min(86vh, 820px);
+  height: min(86vh, 820px);
+  max-height: min(86vh, 820px);
   display: grid;
   grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
   gap: 18px;
@@ -302,6 +303,8 @@ input[aria-invalid="true"]:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .text-btn {
@@ -370,6 +373,10 @@ input[aria-invalid="true"]:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .channel-pill {
@@ -461,12 +468,12 @@ input[aria-invalid="true"]:focus-visible {
 
 .messages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 18px 20px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-height: 240px;
 }
 
 .message-row {
@@ -540,11 +547,13 @@ input[aria-invalid="true"]:focus-visible {
 @media (max-width: 980px) {
   .room-shell {
     grid-template-columns: 1fr;
-    min-height: auto;
+    height: auto;
+    max-height: none;
   }
 
   .room-sidebar {
     gap: 12px;
+    overflow: visible;
   }
 
   .channel-list {
@@ -552,6 +561,7 @@ input[aria-invalid="true"]:focus-visible {
     overflow-x: auto;
     overflow-y: hidden;
     padding-bottom: 4px;
+    padding-right: 0;
   }
 
   .channel-pill {
