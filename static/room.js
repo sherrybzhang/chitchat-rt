@@ -11,6 +11,7 @@ const roomShell = document.querySelector(".room-shell");
 const roomCodeInput = document.getElementById("modal-room-code");
 const roomModalForm = document.getElementById("room-modal-form");
 const roomModalError = document.getElementById("room-modal-error");
+const presenceIndicator = document.getElementById("presence-indicator");
 let previousFocusedElement = null;
 const focusableSelector =
   'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -33,6 +34,15 @@ function announceStatus(message) {
   window.requestAnimationFrame(() => {
     messageStatus.textContent = message;
   });
+}
+
+function updatePresenceIndicator(count) {
+  if (!presenceIndicator || !Number.isFinite(count)) {
+    return;
+  }
+
+  presenceIndicator.dataset.memberCount = String(count);
+  presenceIndicator.textContent = `${count} ${count === 1 ? "member" : "members"} active`;
 }
 
 function getModalFocusableElements() {
@@ -99,6 +109,14 @@ function createMessage(name, msg, options = {}) {
 
 socketio.on("message", (data) => {
   createMessage(data.name, data.message);
+});
+
+socketio.on("presence", (data) => {
+  if (!data || typeof data.count !== "number") {
+    return;
+  }
+
+  updatePresenceIndicator(data.count);
 });
 
 function sendMessage() {
@@ -282,4 +300,9 @@ if (roomModalForm) {
 
 if (roomModal && !roomModal.hidden) {
   toggleRoomModal(true);
+}
+
+if (presenceIndicator) {
+  const initialCount = Number.parseInt(presenceIndicator.dataset.memberCount || "0", 10);
+  updatePresenceIndicator(Number.isNaN(initialCount) ? 0 : initialCount);
 }
