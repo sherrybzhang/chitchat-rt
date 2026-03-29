@@ -12,9 +12,13 @@ const roomCodeInput = document.getElementById("modal-room-code");
 const roomModalForm = document.getElementById("room-modal-form");
 const roomModalError = document.getElementById("room-modal-error");
 const presenceIndicator = document.getElementById("presence-indicator");
+const channelPills = new Map(
+  Array.from(document.querySelectorAll("[data-room-code]")).map((pill) => [pill.dataset.roomCode, pill]),
+);
 let previousFocusedElement = null;
 const focusableSelector =
   'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const unreadStorageKey = "chitchat-last-seen-counts";
 
 function formatTimestamp(date) {
   return date.toLocaleString([], {
@@ -43,6 +47,105 @@ function updatePresenceIndicator(count) {
 
   presenceIndicator.dataset.memberCount = String(count);
   presenceIndicator.textContent = `${count} ${count === 1 ? "member" : "members"} active`;
+}
+
+function getLastSeenCounts() {
+  try {
+    const stored = window.localStorage.getItem(unreadStorageKey);
+    if (!stored) {
+      return {};
+    }
+
+    const parsed = JSON.parse(stored);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch (_error) {
+    return {};
+  }
+}
+
+function setLastSeenCounts(lastSeenCounts) {
+  try {
+    window.localStorage.setItem(unreadStorageKey, JSON.stringify(lastSeenCounts));
+  } catch (_error) {
+    // Ignore storage failures and continue without persisted unread state.
+  }
+}
+
+function getCurrentRoomCode() {
+  return roomShell?.dataset.currentRoom || "";
+}
+
+function getRoomMessageCount(roomCode) {
+  const pill = channelPills.get(roomCode);
+  if (!pill) {
+    return 0;
+  }
+
+  const count = Number.parseInt(pill.dataset.messageCount || "0", 10);
+  return Number.isNaN(count) ? 0 : count;
+}
+
+function setRoomMessageCount(roomCode, count) {
+  const pill = channelPills.get(roomCode);
+  if (!pill || !Number.isFinite(count)) {
+    return;
+  }
+
+  pill.dataset.messageCount = String(count);
+  if (roomShell && roomShell.dataset.currentRoom === roomCode) {
+    roomShell.dataset.currentRoomMessageCount = String(count);
+  }
+}
+
+function updateUnreadBadge(roomCode) {
+  const pill = channelPills.get(roomCode);
+  if (!pill) {
+    return;
+  }
+
+  const badge = pill.querySelector("[data-room-badge]");
+  if (!badge) {
+    return;
+  }
+
+  const currentRoomCode = getCurrentRoomCode();
+  const lastSeenCounts = getLastSeenCounts();
+  const unreadCount =
+    roomCode === currentRoomCode ? 0 : Math.max(getRoomMessageCount(roomCode) - (lastSeenCounts[roomCode] || 0), 0);
+
+  badge.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
+  badge.hidden = unreadCount <= 0;
+}
+
+function markRoomAsSeen(roomCode) {
+  if (!roomCode) {
+    return;
+  }
+
+  const lastSeenCounts = getLastSeenCounts();
+  lastSeenCounts[roomCode] = getRoomMessageCount(roomCode);
+  setLastSeenCounts(lastSeenCounts);
+  updateUnreadBadge(roomCode);
+}
+
+function incrementUnreadRoomCount(roomCode, increment) {
+  if (!Number.isFinite(increment) || increment <= 0) {
+    return;
+  }
+
+  setRoomMessageCount(roomCode, getRoomMessageCount(roomCode) + increment);
+  updateUnreadBadge(roomCode);
+}
+
+function initializeUnreadBadges() {
+  const currentRoomCode = getCurrentRoomCode();
+  if (currentRoomCode) {
+    markRoomAsSeen(currentRoomCode);
+  }
+
+  channelPills.forEach((_pill, roomCode) => {
+    updateUnreadBadge(roomCode);
+  });
 }
 
 function getModalFocusableElements() {
@@ -107,8 +210,16 @@ function createMessage(name, msg, options = {}) {
   }
 }
 
+function isRoomStatusMessage(message) {
+  return message === "has entered the room" || message === "has left the room";
+}
+
 socketio.on("message", (data) => {
   createMessage(data.name, data.message);
+  if (!isRoomStatusMessage(data.message)) {
+    incrementUnreadRoomCount(getCurrentRoomCode(), 1);
+    markRoomAsSeen(getCurrentRoomCode());
+  }
 });
 
 socketio.on("presence", (data) => {
@@ -117,6 +228,14 @@ socketio.on("presence", (data) => {
   }
 
   updatePresenceIndicator(data.count);
+});
+
+socketio.on("unread_update", (data) => {
+  if (!data || typeof data.room !== "string" || typeof data.increment !== "number") {
+    return;
+  }
+
+  incrementUnreadRoomCount(data.room, data.increment);
 });
 
 function sendMessage() {
@@ -306,3 +425,5 @@ if (presenceIndicator) {
   const initialCount = Number.parseInt(presenceIndicator.dataset.memberCount || "0", 10);
   updatePresenceIndicator(Number.isNaN(initialCount) ? 0 : initialCount);
 }
+
+initializeUnreadBadges();

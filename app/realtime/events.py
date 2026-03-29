@@ -1,6 +1,7 @@
 import logging
+import threading
 
-from flask import session
+from flask import request, session
 from flask_socketio import join_room, leave_room, send
 
 from app import socketio
@@ -8,6 +9,8 @@ from app.services.room_services import RoomService
 from app.services.socketio_validation import validate_message_payload, validate_socket_session
 
 logger = logging.getLogger(__name__)
+_connection_registry_lock = threading.Lock()
+_connection_registry: dict[str, dict[str, object]] = {}
 
 
 def emit_presence_update(room_service: RoomService, room: str) -> None:
@@ -16,6 +19,50 @@ def emit_presence_update(room_service: RoomService, room: str) -> None:
         return
 
     socketio.emit("presence", {"count": member_count}, to=room)
+
+
+def get_session_joined_rooms(room_service: RoomService, current_room: str) -> list[str]:
+    raw_rooms = session.get("rooms", [])
+    joined_rooms: list[str] = []
+
+    if isinstance(raw_rooms, list):
+        for room in raw_rooms:
+            if not isinstance(room, str):
+                continue
+            if not room_service.room_exists(room):
+                continue
+            if room not in joined_rooms:
+                joined_rooms.append(room)
+
+    if current_room not in joined_rooms and room_service.room_exists(current_room):
+        joined_rooms.append(current_room)
+
+    return joined_rooms
+
+
+def register_connection(room_service: RoomService, current_room: str) -> None:
+    with _connection_registry_lock:
+        _connection_registry[request.sid] = {
+            "current_room": current_room,
+            "joined_rooms": get_session_joined_rooms(room_service, current_room),
+        }
+
+
+def unregister_connection() -> None:
+    with _connection_registry_lock:
+        _connection_registry.pop(request.sid, None)
+
+
+def emit_unread_update(room: str) -> None:
+    with _connection_registry_lock:
+        target_sids = [
+            sid
+            for sid, state in _connection_registry.items()
+            if room in state["joined_rooms"] and state["current_room"] != room
+        ]
+
+    for sid in target_sids:
+        socketio.emit("unread_update", {"room": room, "increment": 1}, to=sid)
 
 
 def register_socketio_handlers(room_service: RoomService) -> None:
@@ -37,6 +84,7 @@ def register_socketio_handlers(room_service: RoomService) -> None:
         }
         send(content, to=room)
         room_service.add_message(room, content)
+        emit_unread_update(room)
         logger.info("%s said: %s", name, message_text)
 
     @socketio.on("connect")
@@ -52,6 +100,7 @@ def register_socketio_handlers(room_service: RoomService) -> None:
             return
 
         join_room(room)
+        register_connection(room_service, room)
         room_service.add_member(room)
         send({"name": name, "message": "has entered the room"}, to=room)
         emit_presence_update(room_service, room)
@@ -63,6 +112,7 @@ def register_socketio_handlers(room_service: RoomService) -> None:
         if not room or not name:
             return
 
+        unregister_connection()
         leave_room(room)
 
         if room_service.room_exists(room):

@@ -41,6 +41,9 @@ class RoomService:
     def get_room_messages(self, code: str) -> list[RoomMessage] | None:
         return self._room_store.get_messages(code)
 
+    def get_message_count(self, code: str) -> int | None:
+        return self._room_store.get_message_count(code)
+
     def get_member_count(self, code: str) -> int | None:
         return self._room_store.get_member_count(code)
 
@@ -66,9 +69,14 @@ class RoomService:
         if room_access_error:
             return None, room_access_error
 
+        visible_rooms = rooms if rooms is not None else self.list_rooms()
+
         return {
             "code": room_code,
-            "rooms": rooms if rooms is not None else self.list_rooms(),
+            "rooms": visible_rooms,
             "messages": self.get_room_messages(room_code),
             "member_count": self.get_member_count(room_code) or 0,
+            "room_message_counts": {
+                room: self.get_message_count(room) or 0 for room in visible_rooms
+            },
         }, None
