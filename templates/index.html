@@ -1,11 +1,21 @@
 {% extends 'base.html' %}
 
 {% block title %} | Welcome{% endblock %}
+{% block body_class %}auth-screen{% endblock %}
 
 {% block content %}
 <section class="page page-landing" aria-labelledby="landing-title">
   <div class="card card-landing">
-    <p class="chip">Realtime Messaging</p>
+    <div class="card-header-row">
+      <a href="{{ url_for('index') }}" class="card-brand" aria-label="Go to ChitChat home">
+        <img
+          src="{{ url_for('static', filename='favicon.svg', v='5') }}"
+          alt=""
+          class="card-brand-mark"
+        />
+        <span class="card-brand-text">ChitChat</span>
+      </a>
+    </div>
     <h1 id="landing-title">Welcome to ChitChat</h1>
     <p class="support-text">
       ChitChat is a simple online messaging service that lets you connect with
