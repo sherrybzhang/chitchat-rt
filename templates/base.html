@@ -34,17 +34,19 @@
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
-    <a href="{{ url_for('index') }}" class="site-brand" aria-label="Go to ChitChat home">
-      <img
-        src="{{ url_for('static', filename='favicon.svg', v='5') }}"
-        alt=""
-        class="site-brand-mark"
-      />
-      <span class="site-brand-text">ChitChat</span>
-    </a>
-    <main id="main-content" class="content" tabindex="-1">
-      {% block content %}{% endblock %}
-    </main>
+    <div class="app-shell">
+      <a href="{{ url_for('index') }}" class="site-brand" aria-label="Go to ChitChat home">
+        <img
+          src="{{ url_for('static', filename='favicon.svg', v='5') }}"
+          alt=""
+          class="site-brand-mark"
+        />
+        <span class="site-brand-text">ChitChat</span>
+      </a>
+      <main id="main-content" class="content" tabindex="-1">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
     <script src="{{ url_for('static', filename='forms.js') }}"></script>
   </body>
 </html>
