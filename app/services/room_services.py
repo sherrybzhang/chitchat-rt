@@ -60,6 +60,7 @@ class RoomService:
         self,
         name: str | None,
         room_code: str | None,
+        rooms: list[str] | None = None,
     ) -> tuple[dict[str, object] | None, str | None]:
         room_access_error = validate_room_access(room_code, name, self.room_exists)
         if room_access_error:
@@ -67,7 +68,7 @@ class RoomService:
 
         return {
             "code": room_code,
-            "rooms": self.list_rooms(),
+            "rooms": rooms if rooms is not None else self.list_rooms(),
             "messages": self.get_room_messages(room_code),
             "member_count": self.get_member_count(room_code) or 0,
         }, None

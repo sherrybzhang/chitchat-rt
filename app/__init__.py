@@ -32,7 +32,7 @@ def create_app(room_store: RoomStore | None = None) -> Flask:
     from flask import Flask
 
     from app.services.room_services import RoomService
-    from app.storage.memory_store import RoomMemoryStore
+    from app.storage.sqlite_store import SQLiteRoomStore
 
     repo_root = Path(__file__).resolve().parent.parent
     load_dotenv(repo_root / ".env")
@@ -46,7 +46,10 @@ def create_app(room_store: RoomStore | None = None) -> Flask:
         raise RuntimeError("SECRET_KEY is not set. Add it to your environment or .env before running the app.")
     app.config["SECRET_KEY"] = secret_key
     socketio.init_app(app)
-    store = room_store if room_store is not None else RoomMemoryStore()
+    database_path = Path(os.environ.get("DATABASE_PATH", "instance/chitchat.db")).expanduser()
+    if not database_path.is_absolute():
+        database_path = repo_root / database_path
+    store = room_store if room_store is not None else SQLiteRoomStore(database_path)
     room_service = RoomService(store)
     app.extensions["room_service"] = room_service
     from app.http.routes import register_routes
