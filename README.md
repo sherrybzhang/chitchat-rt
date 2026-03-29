@@ -4,7 +4,7 @@ ChitChat RT is a real-time chat application that lets users enter a display name
 
 ***NOTE**: Originally built from scratch in 2023. In 2026, I used AI-assisted development tools to help refactor, modernize, and improve parts of the codebase, including backend fixes and a more polished UI. The architecture, product decisions, and final implementation choices remained mine.*
 
-***NOTE**: This project currently uses in-memory storage for channels and messages. Restarting the server clears all state, and channels are removed when the last member leaves.*
+***NOTE**: This project now uses SQLite for room and message persistence. Restarting the server keeps existing channels and message history, while live member counts reset because presence is session-based.*
 
 ## Features
 - Display-name entry flow before joining chat
@@ -12,13 +12,14 @@ ChitChat RT is a real-time chat application that lets users enter a display name
 - Real-time messaging with Flask-SocketIO
 - Active channel list with quick switching from the sidebar
 - In-room modal for entering another channel without leaving the chat view
+- SQLite-backed persistence for rooms and message history
 - Message and session validation for empty names, missing channel codes, and invalid Socket.IO payloads
 
 ## Technologies
 - **Languages:** Python, JavaScript, HTML, CSS
 - **Frameworks/Libraries:** Flask, Flask-SocketIO, python-dotenv
 - **Transport:** Socket.IO
-- **Storage:** In-memory room store
+- **Storage:** SQLite for persistent rooms/messages, in-memory member counts for live presence
 
 ## Setup
 1) Create and activate a virtual environment.
@@ -34,7 +35,7 @@ pip install -r requirements.txt
 ```bash
 cp .env.example .env
 ```
-Set `SECRET_KEY` in `.env` before starting the app.
+Set `SECRET_KEY` in `.env` before starting the app. `DATABASE_PATH` is optional and defaults to `instance/chitchat.db`.
 
 4) Run the app.
 ```bash
@@ -61,7 +62,7 @@ http://localhost:8080
 `GET /room/<room_code>` opens a specific channel URL and stores that channel in the current session.
 
 ## Tests
-The project includes unit tests for room entry behavior, room validation, and Socket.IO session/message validation.
+The project includes unit tests for room entry behavior, room validation, Socket.IO session/message validation, and SQLite storage behavior.
 
 ```bash
 pytest
