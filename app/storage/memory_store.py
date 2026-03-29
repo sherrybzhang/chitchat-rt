@@ -21,6 +21,12 @@ class RoomMemoryStore(RoomStore):
             return None
         return room["messages"]
 
+    def get_member_count(self, code: str) -> int | None:
+        room = self.get(code)
+        if not room:
+            return None
+        return room["members"]
+
     def add_message(self, code: str, content: RoomMessage) -> bool:
         room = self.get(code)
         if not room:

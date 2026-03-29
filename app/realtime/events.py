@@ -10,6 +10,14 @@ from app.services.socketio_validation import validate_message_payload, validate_
 logger = logging.getLogger(__name__)
 
 
+def emit_presence_update(room_service: RoomService, room: str) -> None:
+    member_count = room_service.get_member_count(room)
+    if member_count is None:
+        return
+
+    socketio.emit("presence", {"count": member_count}, to=room)
+
+
 def register_socketio_handlers(room_service: RoomService) -> None:
     @socketio.on("message")
     def message(data: object) -> None:
@@ -44,8 +52,9 @@ def register_socketio_handlers(room_service: RoomService) -> None:
             return
 
         join_room(room)
-        send({"name": name, "message": "has entered the room"}, to=room)
         room_service.add_member(room)
+        send({"name": name, "message": "has entered the room"}, to=room)
+        emit_presence_update(room_service, room)
         logger.info("%s joined room %s", name, room)
 
     @socketio.on("disconnect")
@@ -58,6 +67,7 @@ def register_socketio_handlers(room_service: RoomService) -> None:
 
         if room_service.room_exists(room):
             room_service.remove_member(room)
+            send({"name": name, "message": "has left the room"}, to=room)
+            emit_presence_update(room_service, room)
 
-        send({"name": name, "message": "has left the room"}, to=room)
         logger.info("%s has left the room %s", name, room)

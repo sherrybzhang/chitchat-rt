@@ -24,6 +24,9 @@ class RoomStore(Protocol):
     def get_messages(self, code: str) -> list[RoomMessage] | None:
         ...
 
+    def get_member_count(self, code: str) -> int | None:
+        ...
+
     def add_message(self, code: str, content: RoomMessage) -> bool:
         ...
 

@@ -39,3 +39,14 @@ def test_missing_name_fails_room_access(service: RoomService) -> None:
     room_code, error = service.resolve_room_entry(name=None, code="abc")
     assert room_code is None
     assert error == ERR_NAME_REQUIRED
+
+
+def test_room_view_context_includes_member_count(service: RoomService) -> None:
+    service.create_room("abc")
+    service.add_member("abc")
+
+    context, error = service.build_room_view_context(name="alice", room_code="abc")
+
+    assert error is None
+    assert context is not None
+    assert context["member_count"] == 1
