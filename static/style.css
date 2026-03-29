@@ -53,6 +53,11 @@ body.modal-open {
   align-items: center;
 }
 
+.room-screen .content {
+  align-items: flex-start;
+  padding-top: 18px;
+}
+
 .site-brand {
   display: inline-flex;
   align-items: center;
@@ -586,17 +591,20 @@ input[aria-invalid="true"]:focus-visible {
 @media (max-width: 980px) {
   .room-shell {
     grid-template-columns: 1fr;
-    height: auto;
-    max-height: none;
+    grid-template-rows: minmax(150px, 210px) minmax(0, 1fr);
+    height: min(86vh, 820px);
+    max-height: min(86vh, 820px);
   }
 
   .room-sidebar {
     gap: 12px;
-    overflow: visible;
+    overflow: hidden;
   }
 
   .channel-list {
     flex-direction: row;
+    align-items: flex-start;
+    flex: 1;
     overflow-x: auto;
     overflow-y: hidden;
     padding-bottom: 4px;
