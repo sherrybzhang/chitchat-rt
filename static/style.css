@@ -36,19 +36,25 @@ body.modal-open {
   overflow: hidden;
 }
 
-.content {
+.app-shell {
+  width: min(1160px, 100%);
   min-height: 100vh;
+  margin: 0 auto;
+  padding: 22px 20px 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex: 1;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 60px 20px 32px;
+  padding: 20px 0 0;
 }
 
 .site-brand {
-  position: fixed;
-  top: 22px;
-  left: 24px;
-  z-index: 40;
   display: inline-flex;
   align-items: center;
   gap: 12px;
@@ -554,9 +560,11 @@ input[aria-invalid="true"]:focus-visible {
 }
 
 @media (max-width: 760px) {
+  .app-shell {
+    padding: 16px 12px 18px;
+  }
+
   .site-brand {
-    top: 16px;
-    left: 16px;
     gap: 10px;
   }
 
@@ -570,7 +578,7 @@ input[aria-invalid="true"]:focus-visible {
   }
 
   .content {
-    padding: 76px 12px 18px;
+    padding-top: 18px;
   }
 
   .card {
