@@ -90,6 +90,18 @@ class SQLiteRoomStore(RoomStore):
 
         return [{"name": row["name"], "message": row["message"]} for row in rows]
 
+    def get_message_count(self, code: str) -> int | None:
+        if not self.exists(code):
+            return None
+
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT COUNT(*) AS count FROM messages WHERE room_code = ?",
+                (code,),
+            ).fetchone()
+
+        return int(row["count"]) if row is not None else 0
+
     def get_member_count(self, code: str) -> int | None:
         if not self.exists(code):
             return None

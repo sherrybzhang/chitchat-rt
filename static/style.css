@@ -367,6 +367,10 @@ input[aria-invalid="true"]:focus-visible {
 }
 
 .channel-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   text-decoration: none;
   color: var(--text-main);
   background: rgba(255, 255, 255, 0.76);
@@ -375,6 +379,26 @@ input[aria-invalid="true"]:focus-visible {
   padding: 9px 14px;
   font-size: 0.9rem;
   transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.channel-pill-label {
+  overflow-wrap: anywhere;
+}
+
+.channel-pill-badge {
+  flex-shrink: 0;
+  min-width: 1.75rem;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--green-deep);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.channel-pill-badge[hidden] {
+  display: none;
 }
 
 .channel-pill:hover {
