@@ -32,7 +32,7 @@
 
     {% block head %}{% endblock %}
   </head>
-  <body>
+  <body class="{% block body_class %}{% endblock %}">
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <div class="app-shell">
       <a href="{{ url_for('index') }}" class="site-brand" aria-label="Go to ChitChat home">
