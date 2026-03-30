@@ -43,3 +43,19 @@ def test_joined_rooms_accumulate_for_one_session() -> None:
 
     assert b'href="/room/abc"' in response.data
     assert b'href="/room/xyz"' in response.data
+
+
+def test_joined_rooms_keep_original_order_when_revisiting_channel() -> None:
+    os.environ["SECRET_KEY"] = "test-secret"
+    app = create_app(room_store=RoomMemoryStore())
+    app.config["TESTING"] = True
+
+    client = app.test_client()
+    client.post("/chat", data={"name": "sherry"})
+    client.post("/chatroom-entry", data={"code": "abc"})
+    client.post("/room-modal-entry", data={"code": "xyz"})
+
+    response = client.get("/room/abc", follow_redirects=True)
+    page = response.get_data(as_text=True)
+
+    assert page.index('href="/room/abc"') < page.index('href="/room/xyz"')

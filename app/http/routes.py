@@ -32,7 +32,10 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
         session.modified = True
 
     def remember_room(room_code: str) -> list[str]:
-        rooms = [room for room in get_session_rooms() if room != room_code]
+        rooms = get_session_rooms()
+        if room_code in rooms:
+            return rooms
+
         rooms.append(room_code)
         store_session_rooms(rooms)
         return rooms
