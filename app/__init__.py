@@ -36,11 +36,7 @@ def create_app(room_store: RoomStore | None = None) -> Flask:
 
     repo_root = Path(__file__).resolve().parent.parent
     load_dotenv(repo_root / ".env")
-    app = Flask(
-        __name__,
-        template_folder=str(repo_root / "templates"),
-        static_folder=str(repo_root / "static"),
-    )
+    app = Flask(__name__)
     secret_key = os.environ.get("SECRET_KEY")
     if not secret_key:
         raise RuntimeError("SECRET_KEY is not set. Add it to your environment or .env before running the app.")
