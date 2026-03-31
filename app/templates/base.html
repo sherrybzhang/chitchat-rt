@@ -35,14 +35,19 @@
   <body class="{% block body_class %}{% endblock %}">
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <div class="app-shell">
-      <a href="{{ url_for('index') }}" class="site-brand" aria-label="Go to ChitChat home">
-        <img
-          src="{{ url_for('static', filename='favicon.svg', v='5') }}"
-          alt=""
-          class="site-brand-mark"
-        />
-        <span class="site-brand-text">ChitChat</span>
-      </a>
+      <header class="app-header">
+        <a href="{{ url_for('index') }}" class="site-brand" aria-label="Go to ChitChat home">
+          <img
+            src="{{ url_for('static', filename='favicon.svg', v='5') }}"
+            alt=""
+            class="site-brand-mark"
+          />
+          <span class="site-brand-text">ChitChat</span>
+        </a>
+        {% if session.get('name') %}
+        <p class="session-user" aria-label="Current user">{{ session.get('name') }}</p>
+        {% endif %}
+      </header>
       <main id="main-content" class="content" tabindex="-1">
         {% block content %}{% endblock %}
       </main>
