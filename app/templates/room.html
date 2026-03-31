@@ -49,15 +49,20 @@
         <h1 id="room-title">{{ code }}</h1>
       </div>
       {% set active_member_count = member_count + 1 %}
-      <p
-        class="presence-indicator"
-        id="presence-indicator"
-        aria-live="polite"
-        aria-atomic="true"
-        data-member-count="{{ active_member_count }}"
-      >
-        {{ active_member_count }} {{ "member" if active_member_count == 1 else "members" }} active
-      </p>
+      <div class="chat-header-actions">
+        <p
+          class="presence-indicator"
+          id="presence-indicator"
+          aria-live="polite"
+          aria-atomic="true"
+          data-member-count="{{ active_member_count }}"
+        >
+          {{ active_member_count }} {{ "member" if active_member_count == 1 else "members" }} active
+        </p>
+        <form action="{{ url_for('leave_room') }}" method="post" class="leave-room-form">
+          <button type="submit" class="btn leave-room-btn">Leave Room</button>
+        </form>
+      </div>
     </header>
 
     <p class="sr-only" id="messages-help">

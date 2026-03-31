@@ -481,6 +481,15 @@ input[aria-invalid="true"]:focus-visible {
   gap: 16px;
 }
 
+.chat-header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .eyebrow {
   margin: 0;
   font-size: 0.72rem;
@@ -504,6 +513,23 @@ input[aria-invalid="true"]:focus-visible {
   font-size: 0.84rem;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.leave-room-form {
+  margin: 0;
+}
+
+.leave-room-btn {
+  padding: 8px 12px;
+  color: var(--error);
+  background: transparent;
+  border: 1px solid rgba(162, 44, 44, 0.18);
+  box-shadow: none;
+  white-space: nowrap;
+}
+
+.leave-room-btn:hover {
+  background: rgba(162, 44, 44, 0.08);
 }
 
 .messages {
@@ -651,8 +677,12 @@ input[aria-invalid="true"]:focus-visible {
     gap: 10px;
   }
 
-  .presence-indicator {
-    margin-left: auto;
+  .chat-header-actions {
+    gap: 8px;
+  }
+
+  .leave-room-btn {
+    padding: 7px 11px;
   }
 
   .message-row {

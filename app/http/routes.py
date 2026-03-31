@@ -40,6 +40,11 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
         store_session_rooms(rooms)
         return rooms
 
+    def forget_room(room_code: str) -> list[str]:
+        rooms = [room for room in get_session_rooms() if room != room_code]
+        store_session_rooms(rooms)
+        return rooms
+
     def render_room_modal_error(
         *,
         error_message: str,
@@ -169,6 +174,26 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
         # Set the cookie
         response = make_response(redirect(url_for("room")))
         response.set_cookie(_ROOM_CODE_COOKIE, room_code)
+        return response
+
+    @app.route("/leave-room", methods=["POST"])
+    def leave_room() -> ResponseReturnValue:
+        current_room = session.get("room")
+        if not isinstance(current_room, str) or not current_room:
+            return redirect(url_for("chatroom_entry"))
+
+        remaining_rooms = forget_room(current_room)
+        next_room = remaining_rooms[-1] if remaining_rooms else None
+
+        if next_room:
+            session["room"] = next_room
+            response = make_response(redirect(url_for("room")))
+            response.set_cookie(_ROOM_CODE_COOKIE, next_room)
+            return response
+
+        session.pop("room", None)
+        response = make_response(redirect(url_for("chatroom_entry")))
+        response.delete_cookie(_ROOM_CODE_COOKIE)
         return response
 
     @app.route("/room-modal-entry", methods=["POST"])
