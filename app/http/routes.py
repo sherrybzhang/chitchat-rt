@@ -3,11 +3,13 @@ import logging
 from flask import Flask, jsonify, make_response, redirect, render_template, request, session, url_for
 from flask.typing import ResponseReturnValue
 
+from app import socketio
 from app.services.room_services import RoomService
 from app.services.room_validation import validate_name
 
 _ROOM_CODE_COOKIE = "room_code"
 _SESSION_ROOMS_KEY = "rooms"
+_SESSION_PENDING_JOIN_ANNOUNCEMENT_KEY = "pending_room_join_announcement"
 logger = logging.getLogger(__name__)
 
 
@@ -45,6 +47,16 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
         store_session_rooms(rooms)
         return rooms
 
+    def set_pending_join_announcement(room_code: str | None) -> None:
+        if room_code:
+            session[_SESSION_PENDING_JOIN_ANNOUNCEMENT_KEY] = room_code
+        else:
+            session.pop(_SESSION_PENDING_JOIN_ANNOUNCEMENT_KEY, None)
+
+    def consume_pending_join_announcement(room_code: str | None) -> bool:
+        pending_room = session.pop(_SESSION_PENDING_JOIN_ANNOUNCEMENT_KEY, None)
+        return isinstance(pending_room, str) and pending_room == room_code
+
     def render_room_modal_error(
         *,
         error_message: str,
@@ -72,6 +84,7 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
             render_template(
                 "room.html",
                 **room_context,
+                announce_room_join=False,
                 modal_open=True,
                 modal_error=error_message,
                 modal_code=code,
@@ -99,6 +112,7 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
 
             session.pop("room", None)
             store_session_rooms([])
+            set_pending_join_announcement(None)
             return render_template("chatroom_entry.html")
 
         return render_template("index.html")
@@ -127,6 +141,7 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
 
             session["room"] = room
             joined_rooms = remember_room(room)
+            set_pending_join_announcement(None)
             room_context, room_error = room_service.build_room_view_context(
                 name=name,
                 room_code=room,
@@ -142,7 +157,7 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
                     )
                 return render_template("chatroom_entry.html", error=room_error, code=code, name=name)
 
-            return render_template("room.html", **room_context)
+            return render_template("room.html", **room_context, announce_room_join=True)
 
         return render_template("chatroom_entry.html")
 
@@ -161,7 +176,7 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
         if room_access_error:
             return redirect(url_for("chatroom_entry"))
 
-        return render_template("room.html", **room_context)
+        return render_template("room.html", **room_context, announce_room_join=consume_pending_join_announcement(room))
 
     @app.route("/room/<room_code>")
     def view_room(room_code: str) -> ResponseReturnValue:
@@ -170,6 +185,7 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
 
         session["room"] = room_code
         remember_room(room_code)
+        set_pending_join_announcement(None)
 
         # Set the cookie
         response = make_response(redirect(url_for("room")))
@@ -179,8 +195,13 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
     @app.route("/leave-room", methods=["POST"])
     def leave_room() -> ResponseReturnValue:
         current_room = session.get("room")
+        name = session.get("name")
         if not isinstance(current_room, str) or not current_room:
             return redirect(url_for("chatroom_entry"))
+        set_pending_join_announcement(None)
+
+        if isinstance(name, str) and name and room_service.room_exists(current_room):
+            socketio.emit("message", {"name": name, "message": "has left the room"}, to=current_room)
 
         remaining_rooms = forget_room(current_room)
         next_room = remaining_rooms[-1] if remaining_rooms else None
@@ -230,6 +251,7 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
 
         session["room"] = room
         joined_rooms = remember_room(room)
+        set_pending_join_announcement(room)
         room_context, room_error = room_service.build_room_view_context(
             name=name,
             room_code=room,

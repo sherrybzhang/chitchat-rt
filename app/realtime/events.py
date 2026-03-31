@@ -53,6 +53,14 @@ def unregister_connection() -> None:
         _connection_registry.pop(request.sid, None)
 
 
+def get_registered_room() -> str | None:
+    with _connection_registry_lock:
+        connection_state = _connection_registry.get(request.sid)
+
+    current_room = connection_state.get("current_room") if isinstance(connection_state, dict) else None
+    return current_room if isinstance(current_room, str) else None
+
+
 def emit_unread_update(room: str) -> None:
     with _connection_registry_lock:
         target_sids = [
@@ -102,14 +110,24 @@ def register_socketio_handlers(room_service: RoomService) -> None:
         join_room(room)
         register_connection(room_service, room)
         room_service.add_member(room)
-        send({"name": name, "message": "has entered the room"}, to=room)
         emit_presence_update(room_service, room)
         logger.info("%s joined room %s", name, room)
 
-    @socketio.on("disconnect")
-    def disconnect() -> None:
+    @socketio.on("announce_join")
+    def announce_join() -> None:
         room, name = validate_socket_session(session.get("room"), session.get("name"))
         if not room or not name:
+            return
+        if not room_service.room_exists(room):
+            return
+
+        send({"name": name, "message": "has entered the room"}, to=room)
+
+    @socketio.on("disconnect")
+    def disconnect() -> None:
+        room = get_registered_room()
+        name = session.get("name")
+        if not room:
             return
 
         unregister_connection()
@@ -117,7 +135,6 @@ def register_socketio_handlers(room_service: RoomService) -> None:
 
         if room_service.room_exists(room):
             room_service.remove_member(room)
-            send({"name": name, "message": "has left the room"}, to=room)
             emit_presence_update(room_service, room)
 
-        logger.info("%s has left the room %s", name, room)
+        logger.info("%s has left the room %s", name or "unknown user", room)
