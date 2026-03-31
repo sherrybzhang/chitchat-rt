@@ -38,12 +38,11 @@
           aria-describedby="code-error"
           {% if error %}aria-invalid="true"{% endif %}
         />
+        <p class="form-error" id="code-error" role="alert" {% if not error %}hidden{% endif %}>
+          {{ error|default('', true) }}
+        </p>
         <button type="submit" class="btn btn-primary">Enter Channel</button>
       </div>
-
-      <p class="form-error" id="code-error" role="alert" {% if not error %}hidden{% endif %}>
-        {{ error|default('', true) }}
-      </p>
     </form>
   </div>
 </section>
