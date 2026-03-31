@@ -4,7 +4,13 @@ ChitChat RT is a real-time multi-room chat application where users pick a displa
 
 ***NOTE**: Originally built from scratch in 2023. In 2026, I used AI-assisted development tools to help refactor, modernize, and improve parts of the codebase, including backend fixes and a more polished UI. The architecture, product decisions, and final implementation choices remained mine.*
 
+### Current Version
 ![ChitChat RT Screenshot](docs/chitchat-screenshot-mar30.png)
+
+### Original Version
+![ChitChat Old Screenshot](docs/chitchat-screenshot-original.png)
+
+The modernization transformed ChitChat through a major architectural refactor, extensive backend logic fixes, and a complete UI overhaul, making the app significantly more maintainable, reliable, and polished end to end.
 
 ## Features
 - Branded display-name and channel-entry flow
@@ -17,7 +23,7 @@ ChitChat RT is a real-time multi-room chat application where users pick a displa
 ## Technologies
 - **Languages:** Python, JavaScript, HTML, CSS
 - **Frameworks/Libraries:** Flask, Flask-SocketIO
-- **Realtime:** Socket.IO
+- **Realtime:** Socket.IO client
 - **Database:** SQLite
 
 ## Setup
