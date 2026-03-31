@@ -26,22 +26,24 @@
     <form method="post" action="{{ url_for('chat') }}" class="stack-form" data-validate-form>
       <label for="name">Display Name</label>
       <div class="row-input">
-        <input
-          type="text"
-          id="name"
-          name="name"
-          value="{{ name }}"
-          placeholder="e.g. Skyler"
-          autocomplete="nickname"
-          required
-          data-error-id="name-error"
-          aria-required="true"
-          aria-describedby="name-error"
-          {% if error %}aria-invalid="true"{% endif %}
-        />
-        <p class="form-error" id="name-error" role="alert" {% if not error %}hidden{% endif %}>
-          {{ error|default('', true) }}
-        </p>
+        <div class="field-with-error">
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value="{{ name }}"
+            placeholder="e.g. Skyler"
+            autocomplete="nickname"
+            required
+            data-error-id="name-error"
+            aria-required="true"
+            aria-describedby="name-error"
+            {% if error %}aria-invalid="true"{% endif %}
+          />
+          <p class="form-error" id="name-error" role="alert" {% if not error %}hidden{% endif %}>
+            {{ error|default('', true) }}
+          </p>
+        </div>
         <button type="submit" name="join" class="btn btn-primary">Enter Chat</button>
       </div>
     </form>
