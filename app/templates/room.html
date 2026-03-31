@@ -8,6 +8,7 @@
   class="room-shell"
   data-current-room="{{ code }}"
   data-current-room-message-count="{{ room_message_counts.get(code, 0) }}"
+  data-announce-room-join="{% if announce_room_join %}true{% else %}false{% endif %}"
 >
   <aside class="room-sidebar" aria-labelledby="channels-heading">
     <button

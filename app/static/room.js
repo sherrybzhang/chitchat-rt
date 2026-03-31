@@ -15,6 +15,7 @@ const presenceIndicator = document.getElementById("presence-indicator");
 const channelPills = new Map(
   Array.from(document.querySelectorAll("[data-room-code]")).map((pill) => [pill.dataset.roomCode, pill]),
 );
+let shouldAnnounceRoomJoin = roomShell?.dataset.announceRoomJoin === "true";
 let previousFocusedElement = null;
 const focusableSelector =
   'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -220,6 +221,15 @@ socketio.on("message", (data) => {
     incrementUnreadRoomCount(getCurrentRoomCode(), 1);
     markRoomAsSeen(getCurrentRoomCode());
   }
+});
+
+socketio.on("connect", () => {
+  if (!shouldAnnounceRoomJoin) {
+    return;
+  }
+
+  shouldAnnounceRoomJoin = false;
+  socketio.emit("announce_join");
 });
 
 socketio.on("presence", (data) => {
