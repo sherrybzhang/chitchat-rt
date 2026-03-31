@@ -647,8 +647,12 @@ input[aria-invalid="true"]:focus-visible {
   }
 
   .chat-header {
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .presence-indicator {
+    margin-left: auto;
   }
 
   .message-row {
