@@ -24,23 +24,25 @@
     <form action="{{ url_for('chatroom_entry') }}" method="post" class="stack-form" data-validate-form>
       <label for="code">Channel Code</label>
       <div class="row-input">
-        <input
-          type="text"
-          id="code"
-          name="code"
-          value="{{ code }}"
-          placeholder="e.g. project-alpha"
-          autocomplete="off"
-          required
-          data-error-id="code-error"
-          aria-required="true"
-          autocapitalize="off"
-          aria-describedby="code-error"
-          {% if error %}aria-invalid="true"{% endif %}
-        />
-        <p class="form-error" id="code-error" role="alert" {% if not error %}hidden{% endif %}>
-          {{ error|default('', true) }}
-        </p>
+        <div class="field-with-error">
+          <input
+            type="text"
+            id="code"
+            name="code"
+            value="{{ code }}"
+            placeholder="e.g. project-alpha"
+            autocomplete="off"
+            required
+            data-error-id="code-error"
+            aria-required="true"
+            autocapitalize="off"
+            aria-describedby="code-error"
+            {% if error %}aria-invalid="true"{% endif %}
+          />
+          <p class="form-error" id="code-error" role="alert" {% if not error %}hidden{% endif %}>
+            {{ error|default('', true) }}
+          </p>
+        </div>
         <button type="submit" class="btn btn-primary">Enter Channel</button>
       </div>
     </form>

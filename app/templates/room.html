@@ -132,28 +132,30 @@
     >
       <label for="modal-room-code">Channel Code</label>
       <div class="row-input">
-        <input
-          type="text"
-          id="modal-room-code"
-          name="code"
-          value="{{ modal_code|default('', true) }}"
-          placeholder="e.g. project-alpha"
-          autocomplete="off"
-          required
-          data-error-id="room-modal-error"
-          aria-required="true"
-          autocapitalize="off"
-          aria-describedby="room-modal-error"
-          {% if modal_error %}aria-invalid="true"{% endif %}
-        />
-        <p
-        class="form-error"
-        id="room-modal-error"
-        role="alert"
-        {% if not modal_error %}hidden{% endif %}
-        >
-          {{ modal_error|default('', true) }}
-        </p>
+        <div class="field-with-error">
+          <input
+            type="text"
+            id="modal-room-code"
+            name="code"
+            value="{{ modal_code|default('', true) }}"
+            placeholder="e.g. project-alpha"
+            autocomplete="off"
+            required
+            data-error-id="room-modal-error"
+            aria-required="true"
+            autocapitalize="off"
+            aria-describedby="room-modal-error"
+            {% if modal_error %}aria-invalid="true"{% endif %}
+          />
+          <p
+            class="form-error"
+            id="room-modal-error"
+            role="alert"
+            {% if not modal_error %}hidden{% endif %}
+          >
+            {{ modal_error|default('', true) }}
+          </p>
+        </div>
         <button type="submit" class="btn btn-primary">Enter Channel</button>
       </div>
     </form>

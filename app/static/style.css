@@ -256,7 +256,24 @@ label {
 
 .row-input {
   display: flex;
+  align-items: flex-start;
   gap: 12px;
+}
+
+.row-input > button,
+.row-input > .btn {
+  align-self: flex-start;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.field-with-error {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
 }
 
 input {
@@ -701,6 +718,12 @@ input[aria-invalid="true"]:focus-visible {
 
   .row-input {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .row-input button,
+  .row-input .btn {
+    width: 100%;
   }
 
   .messages {
