@@ -140,17 +140,16 @@
           aria-describedby="room-modal-error"
           {% if modal_error %}aria-invalid="true"{% endif %}
         />
-        <button type="submit" class="btn btn-primary">Enter Channel</button>
-      </div>
-
-      <p
+        <p
         class="form-error"
         id="room-modal-error"
         role="alert"
         {% if not modal_error %}hidden{% endif %}
-      >
-        {{ modal_error|default('', true) }}
-      </p>
+        >
+          {{ modal_error|default('', true) }}
+        </p>
+        <button type="submit" class="btn btn-primary">Enter Channel</button>
+      </div>
     </form>
   </div>
 </div>

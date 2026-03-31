@@ -39,11 +39,11 @@
           aria-describedby="name-error"
           {% if error %}aria-invalid="true"{% endif %}
         />
+        <p class="form-error" id="name-error" role="alert" {% if not error %}hidden{% endif %}>
+          {{ error|default('', true) }}
+        </p>
         <button type="submit" name="join" class="btn btn-primary">Enter Chat</button>
       </div>
-      <p class="form-error" id="name-error" role="alert" {% if not error %}hidden{% endif %}>
-        {{ error|default('', true) }}
-      </p>
     </form>
   </div>
 </section>
