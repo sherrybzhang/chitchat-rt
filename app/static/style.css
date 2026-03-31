@@ -301,13 +301,9 @@ button:focus-visible,
 }
 
 .form-error {
-  margin: 6px 0 0;
-  padding: 10px 12px;
+  margin: 0 0 0;
   font-size: 0.9rem;
   font-weight: 600;
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(162, 44, 44, 0.2);
-  background: rgba(162, 44, 44, 0.08);
   color: var(--error);
 }
 
