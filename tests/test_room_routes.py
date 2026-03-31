@@ -59,3 +59,38 @@ def test_joined_rooms_keep_original_order_when_revisiting_channel() -> None:
     page = response.get_data(as_text=True)
 
     assert page.index('href="/room/abc"') < page.index('href="/room/xyz"')
+
+
+def test_leave_room_redirects_to_remaining_joined_room() -> None:
+    os.environ["SECRET_KEY"] = "test-secret"
+    app = create_app(room_store=RoomMemoryStore())
+    app.config["TESTING"] = True
+
+    client = app.test_client()
+    client.post("/chat", data={"name": "sherry"})
+    client.post("/chatroom-entry", data={"code": "abc"})
+    client.post("/room-modal-entry", data={"code": "xyz"})
+
+    response = client.post("/leave-room", follow_redirects=True)
+    page = response.get_data(as_text=True)
+
+    assert response.request.path == "/room"
+    assert 'href="/room/abc"' in page
+    assert 'href="/room/xyz"' not in page
+    assert "<h1 id=\"room-title\">abc</h1>" in page
+
+
+def test_leave_room_redirects_to_channel_entry_when_no_joined_rooms_remain() -> None:
+    os.environ["SECRET_KEY"] = "test-secret"
+    app = create_app(room_store=RoomMemoryStore())
+    app.config["TESTING"] = True
+
+    client = app.test_client()
+    client.post("/chat", data={"name": "sherry"})
+    client.post("/chatroom-entry", data={"code": "abc"})
+
+    response = client.post("/leave-room", follow_redirects=True)
+    page = response.get_data(as_text=True)
+
+    assert response.request.path == "/chatroom-entry"
+    assert "<h1 id=\"channel-entry-title\">Enter a Channel</h1>" in page
