@@ -75,7 +75,7 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
             rooms=get_session_rooms(),
         )
         if room_context_error:
-            response = render_template("chatroom_entry.html", error=error_message, code=code, name=name)
+            response = render_template("chatroom-entry.html", error=error_message, code=code, name=name)
             if chatroom_entry_status_code is not None:
                 return response, chatroom_entry_status_code
             return response
@@ -113,7 +113,7 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
             session.pop("room", None)
             store_session_rooms([])
             set_pending_join_announcement(None)
-            return render_template("chatroom_entry.html")
+            return render_template("chatroom-entry.html")
 
         return render_template("index.html")
 
@@ -137,7 +137,7 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
                         code=code,
                         current_room=session.get("room"),
                     )
-                return render_template("chatroom_entry.html", error=entry_error, code=code, name=name)
+                return render_template("chatroom-entry.html", error=entry_error, code=code, name=name)
 
             session["room"] = room
             joined_rooms = remember_room(room)
@@ -155,11 +155,11 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
                         code=code,
                         current_room=session.get("room"),
                     )
-                return render_template("chatroom_entry.html", error=room_error, code=code, name=name)
+                return render_template("chatroom-entry.html", error=room_error, code=code, name=name)
 
             return render_template("room.html", **room_context, announce_room_join=True)
 
-        return render_template("chatroom_entry.html")
+        return render_template("chatroom-entry.html")
 
     @app.route("/room")
     def room() -> ResponseReturnValue:
@@ -279,7 +279,7 @@ def register_routes(app: Flask, room_service: RoomService) -> Flask:
     @app.route("/new-room", methods=["POST", "GET"])
     def new_room() -> ResponseReturnValue:
         if request.method == "POST":
-            return render_template("chatroom_entry.html")
+            return render_template("chatroom-entry.html")
 
         return redirect(url_for("chatroom_entry"))
 
