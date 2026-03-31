@@ -12,41 +12,52 @@ class SQLiteRoomStore(RoomStore):
         self._database_path = str(database_path)
         self._member_counts: dict[str, int] = {}
         self._member_counts_lock = threading.Lock()
+        self._schema_lock = threading.Lock()
 
         if self._database_path != ":memory:":
             Path(self._database_path).expanduser().resolve().parent.mkdir(parents=True, exist_ok=True)
 
         self._initialize_database()
 
-    def _connect(self) -> sqlite3.Connection:
+    def _open_connection(self) -> sqlite3.Connection:
         connection = sqlite3.connect(self._database_path)
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA foreign_keys = ON")
         return connection
 
     def _initialize_database(self) -> None:
-        with self._connect() as connection:
-            connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS rooms (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    code TEXT NOT NULL UNIQUE,
-                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-                )
-                """
+        with self._schema_lock:
+            with self._open_connection() as connection:
+                self._ensure_schema(connection)
+
+    def _ensure_schema(self, connection: sqlite3.Connection) -> None:
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS rooms (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                code TEXT NOT NULL UNIQUE,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
-            connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS messages (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    room_code TEXT NOT NULL,
-                    name TEXT NOT NULL,
-                    message TEXT NOT NULL,
-                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (room_code) REFERENCES rooms(code) ON DELETE CASCADE
-                )
-                """
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                room_code TEXT NOT NULL,
+                name TEXT NOT NULL,
+                message TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (room_code) REFERENCES rooms(code) ON DELETE CASCADE
             )
+            """
+        )
+
+    def _connect(self) -> sqlite3.Connection:
+        connection = self._open_connection()
+        with self._schema_lock:
+            self._ensure_schema(connection)
+        return connection
 
     def exists(self, code: str) -> bool:
         with self._connect() as connection:
