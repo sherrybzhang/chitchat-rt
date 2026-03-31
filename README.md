@@ -4,6 +4,8 @@ ChitChat RT is a real-time multi-room chat application where users pick a displa
 
 ***NOTE**: Originally built from scratch in 2023. In 2026, I used AI-assisted development tools to help refactor, modernize, and improve parts of the codebase, including backend fixes and a more polished UI. The architecture, product decisions, and final implementation choices remained mine.*
 
+![ChitChat RT Screenshot](docs/chitchat-screenshot-mar30.png)
+
 ## Features
 - Branded display-name and channel-entry flow
 - Create or join channels by code
@@ -14,7 +16,7 @@ ChitChat RT is a real-time multi-room chat application where users pick a displa
 
 ## Technologies
 - **Languages:** Python, JavaScript, HTML, CSS
-- **Frameworks/Libraries:** Flask, Flask-SocketIO, Jinja
+- **Frameworks/Libraries:** Flask, Flask-SocketIO
 - **Realtime:** Socket.IO
 - **Database:** SQLite
 
@@ -56,6 +58,11 @@ By default, ChitChat RT stores data in `instance/chitchat.db`.
 - Live presence counts do not persist across restarts
 - Joined-channel sidebar state is stored per browser session
 - Unread badges are calculated client-side from joined-room message counts and local seen state
+
+## Known Limitations
+- Display names are not unique within a room, so multiple users may appear with the same name in chat
+- The app is session-based and does not include authentication or persistent user accounts
+- Channel codes are not discoverable in the app and must be shared externally to join a room
 
 ## Tests
 The project includes unit tests for room entry behavior, room validation, session-scoped channel visibility, Socket.IO session/message validation, unread-channel events, and SQLite storage behavior.
