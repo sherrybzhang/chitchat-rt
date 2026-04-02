@@ -66,6 +66,7 @@ function getLastSeenCounts() {
 
 function setLastSeenCounts(lastSeenCounts) {
   try {
+    // Persist unread state per browser so badges survive reloads
     window.localStorage.setItem(unreadStorageKey, JSON.stringify(lastSeenCounts));
   } catch (_error) {
     // Ignore storage failures and continue without persisted unread state.
@@ -111,6 +112,7 @@ function updateUnreadBadge(roomCode) {
 
   const currentRoomCode = getCurrentRoomCode();
   const lastSeenCounts = getLastSeenCounts();
+  // Unread count is derived from total messages minus the last seen count saved for that room
   const unreadCount =
     roomCode === currentRoomCode ? 0 : Math.max(getRoomMessageCount(roomCode) - (lastSeenCounts[roomCode] || 0), 0);
 
@@ -141,6 +143,7 @@ function incrementUnreadRoomCount(roomCode, increment) {
 function initializeUnreadBadges() {
   const currentRoomCode = getCurrentRoomCode();
   if (currentRoomCode) {
+    // Treat the initially rendered room as already seen so it does not show an unread badge on load
     markRoomAsSeen(currentRoomCode);
   }
 
@@ -228,6 +231,7 @@ socketio.on("connect", () => {
     return;
   }
 
+  // The server only posts the visible join message when the page explicitly asks for it after load
   shouldAnnounceRoomJoin = false;
   socketio.emit("announce_join");
 });
@@ -269,6 +273,7 @@ function toggleRoomModal(isOpen) {
   }
 
   if (isOpen) {
+    // Save focus so closing the modal can return keyboard users to where they started
     previousFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   }
 
@@ -279,6 +284,7 @@ function toggleRoomModal(isOpen) {
   }
   if (roomShell) {
     if (isOpen) {
+      // Hide the main room shell from assistive tech and keyboard navigation while the modal is active
       roomShell.setAttribute("aria-hidden", "true");
       roomShell.setAttribute("inert", "");
     } else {
@@ -289,6 +295,7 @@ function toggleRoomModal(isOpen) {
 
   if (isOpen) {
     const focusableElements = getModalFocusableElements();
+    // Move focus into the modal immediately so keyboard navigation stays trapped inside it
     const nextFocusTarget = focusableElements[0] || roomCodeInput || closeRoomModalButton;
     if (nextFocusTarget) {
       nextFocusTarget.focus();
@@ -340,6 +347,7 @@ function handleModalKeydown(event) {
   const lastElement = focusableElements[focusableElements.length - 1];
 
   if (!roomModal.contains(document.activeElement)) {
+    // If focus escapes the modal, pull it back to the first available control
     event.preventDefault();
     firstElement.focus();
     return;
@@ -398,6 +406,7 @@ if (roomModalForm) {
     event.preventDefault();
     setRoomModalError("");
 
+    // Submit the modal form over fetch so validation errors can reopen in place without a full page reload
     const formData = new FormData(roomModalForm);
 
     try {

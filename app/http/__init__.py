@@ -1,1 +1,1 @@
-"""HTTP routes package"""
+"""HTTP routes package."""

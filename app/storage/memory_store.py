@@ -52,6 +52,7 @@ class RoomMemoryStore(RoomStore):
         if not room:
             return False
         room["members"] -= 1
+        # In-memory rooms disappear when the last live member leaves because there is no persistence layer behind them
         if room["members"] <= 0:
             del self._rooms[code]
         return True

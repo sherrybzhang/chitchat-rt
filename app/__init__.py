@@ -1,3 +1,4 @@
+"""Application factory and lazily initialized Socket.IO access."""
 from __future__ import annotations
 
 import os
@@ -7,13 +8,15 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from flask import Flask
     from app.storage.room_store import RoomStore
+    from flask_socketio import SocketIO
 
 
 class _SocketIOProxy:
+    """Delay Socket.IO construction until the app factory configures it."""
     def __init__(self) -> None:
-        self._socketio: Any | None = None
+        self._socketio: SocketIO | None = None
 
-    def _get_socketio(self) -> Any:
+    def _get_socketio(self) -> SocketIO:
         if self._socketio is None:
             from flask_socketio import SocketIO
 
@@ -28,6 +31,15 @@ socketio = _SocketIOProxy()
 
 
 def create_app(room_store: RoomStore | None = None) -> Flask:
+    """
+    Build the Flask app with environment-backed config and room services.
+
+    Args:
+        room_store: Optional storage backend override, primarily for tests.
+
+    Returns:
+        A configured Flask application instance with HTTP routes and Socket.IO handlers registered.
+    """
     from dotenv import load_dotenv
     from flask import Flask
 
@@ -44,6 +56,7 @@ def create_app(room_store: RoomStore | None = None) -> Flask:
     socketio.init_app(app)
     database_path = Path(os.environ.get("DATABASE_PATH", "instance/chitchat.db")).expanduser()
     if not database_path.is_absolute():
+        # Keep relative database paths anchored to the repo for predictable local runs
         database_path = repo_root / database_path
     store = room_store if room_store is not None else SQLiteRoomStore(database_path)
     room_service = RoomService(store)

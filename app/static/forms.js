@@ -11,6 +11,7 @@ function setFieldError(field, message) {
     return;
   }
 
+  // Keep the visible error message and screen reader state in sync
   errorElement.textContent = message;
   errorElement.hidden = !message;
 
@@ -32,6 +33,7 @@ function validateField(field) {
 }
 
 validatedForms.forEach((form) => {
+  // Disable the browser tooltip UI so validation feedback stays in the page design
   form.noValidate = true;
 
   const fields = Array.from(form.querySelectorAll("[data-error-id]"));
@@ -63,6 +65,7 @@ validatedForms.forEach((form) => {
         return;
       }
 
+      // Capture submit early so invalid forms never fall through to the browser's default handling
       event.preventDefault();
       event.stopImmediatePropagation();
       firstInvalidField.focus();

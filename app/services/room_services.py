@@ -1,3 +1,4 @@
+"""Application-level room operations and room page view composition."""
 from app.storage.room_store import RoomMessage, RoomRecord, RoomStore
 from app.services.room_validation import (
     validate_room_entry_code,
@@ -6,6 +7,7 @@ from app.services.room_validation import (
 
 
 class RoomService:
+    """Coordinate room validation with the configured storage backend."""
     def __init__(self, room_store: RoomStore) -> None:
         self._room_store = room_store
 
@@ -14,12 +16,25 @@ class RoomService:
         name: str | None,
         code: str | None,
     ) -> tuple[str | None, str | None]:
+        """
+        Validate and normalize a requested room code for entry.
+
+        Args:
+            name: The display name stored in session for the current user.
+            code: The raw room code submitted from the UI.
+
+        Returns:
+            A tuple of `(room_code, error_message)` where `room_code` is the normalized code on success and
+            `error_message` is populated when validation fails.
+        """
+        # Normalize form input once so every downstream check sees the same room code
         room_code = (code or "").strip()
 
         code_error = validate_room_entry_code(room_code)
         if code_error:
             return None, code_error
 
+        # Create rooms lazily so entering a new code is enough to start a new channel
         if not self.room_exists(room_code):
             self.create_room(room_code)
 
@@ -65,12 +80,26 @@ class RoomService:
         room_code: str | None,
         rooms: list[str] | None = None,
     ) -> tuple[dict[str, object] | None, str | None]:
+        """
+        Build the template context used to render the room page.
+
+        Args:
+            name: The current user's display name.
+            room_code: The active room code to render.
+            rooms: Optional pre-filtered room codes to show in the sidebar.
+
+        Returns:
+            A tuple of `(context, error_message)` where `context` contains room template values on success and
+            `error_message` is set when the room cannot be accessed.
+        """
         room_access_error = validate_room_access(room_code, name, self.room_exists)
         if room_access_error:
             return None, room_access_error
 
+        # Prefer the caller's sanitized room list so the sidebar mirrors session state
         visible_rooms = rooms if rooms is not None else self.list_rooms()
 
+        # Build per-room message counts once here so the template can render badges without extra lookups
         return {
             "code": room_code,
             "rooms": visible_rooms,

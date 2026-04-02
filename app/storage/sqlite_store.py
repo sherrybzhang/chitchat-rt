@@ -10,11 +10,14 @@ from app.storage.room_store import RoomMessage, RoomRecord, RoomStore
 class SQLiteRoomStore(RoomStore):
     def __init__(self, database_path: str | Path) -> None:
         self._database_path = str(database_path)
+        # Presence is live session state, so member counts stay in memory instead of being persisted in SQLite
         self._member_counts: dict[str, int] = {}
         self._member_counts_lock = threading.Lock()
+        # Schema checks can happen from multiple fresh connections, so guard setup with a shared lock
         self._schema_lock = threading.Lock()
 
         if self._database_path != ":memory:":
+            # Relative path normalization happens in the app factory, so the store only ensures the parent exists
             Path(self._database_path).expanduser().resolve().parent.mkdir(parents=True, exist_ok=True)
 
         self._initialize_database()
@@ -55,6 +58,7 @@ class SQLiteRoomStore(RoomStore):
 
     def _connect(self) -> sqlite3.Connection:
         connection = self._open_connection()
+        # Each new connection verifies the schema so callers can rely on tables being present
         with self._schema_lock:
             self._ensure_schema(connection)
         return connection

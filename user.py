@@ -1,18 +1,16 @@
+"""Minimal user model for session-backed authentication hooks."""
 class User:
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         self.name = name
-    
-    @staticmethod
-    def is_authenticated(self):
+
+    def is_authenticated(self) -> bool:
         return True
 
-    @staticmethod
-    def is_active(self):
+    def is_active(self) -> bool:
         return True
-    
-    @staticmethod
-    def is_anonymous(self):
+
+    def is_anonymous(self) -> bool:
         return False
-    
-    def get_id(self):
+
+    def get_id(self) -> str:
         return self.name
